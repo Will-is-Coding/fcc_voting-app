@@ -1,0 +1,9 @@
+<div class="poll-area">
+	<div class="row poll-row" ng-repeat="poll in indexCtrl.polls">
+		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center">
+			<a ng-href="#/poll/{{poll._id}}">
+			<h3>{{poll.question}}</h3>
+			</a>
+		</div>
+	</div>
+</div>
