@@ -4,40 +4,7 @@ var path = process.cwd();
 var bodyparser = require('body-parser');
 var express = require('express');
 var Poll = require('../models/poll.js');
-
-var options = {
-	A: 0,
-	B: 0,
-	C: 0
-};
-
-function getPollFromDatabase(possiblePoll, ip, createNew) {
-	return Poll.find({ question: possiblePoll.question }, function(err, polls) {
-		if( err )
-			console.log("ERR: " + err);
-			
-		if( (!polls || polls.length <= 0) && createNew ) {
-			//console.log(possiblePoll.options);
-			console.log('poll created!');
-			return createPoll(possiblePoll, ip);
-		}
-		else if(polls.length > 0 && createNew) {
-			polls[0].options = possiblePoll.options;
-
-			polls[0].save( function(err) {
-				if (err) throw err;
-				
-				console.log('Updated!');
-			});
-			return polls[0];
-		}
-		else if( !createNew ) {
-			//possiblePoll.options; //Get options via :tag? or id
-			return polls[0];
-		}
-			
-	}).limit(1);
-}
+var GitHubStrategy = require('passport-github').Strategy;
 
 function createPoll(poll_question, poll_options) {
 	var newPoll = new Poll({
@@ -59,17 +26,34 @@ function createPoll(poll_question, poll_options) {
 module.exports = function (app, passport) {
 	app.use( bodyparser.json() );
 	app.use( bodyparser.urlencoded({extended: false}) );
-	/*function isLoggedIn (req, res, next) {
-		if (req.isAuthenticated()) {
+
+	var isAuthenticated = function (req, res, next) {
+		if (req.isAuthenticated())
 			return next();
-		} else {
-			res.redirect('/login');
-		}
-	}*/
+		res.redirect('#/');
+	};
+
 	app.route('/')
 		.get( function (req, res) {
 			res.status(200).sendFile(path + '/public/index.html');
 		});
+		
+	app.post('/api/login', passport.authenticate('login', {
+		successRedirect: '#/',
+		failureRedirect: '#/login',
+		failureFlash: true
+	}));
+	
+	app.post('/api/signup', passport.authenticate('signup', {
+		sucessRedirect: '#/',
+		failureRedirect: '#/signup',
+		failureFlash: true
+	}));
+	
+	app.get('/api/signout', function(req, res) {
+		req.logout();
+		res.redirect('#/');
+	});
 		
 	app.route('/api/fetchpolls')
 		.get( function(req, res) {
@@ -91,13 +75,15 @@ module.exports = function (app, passport) {
 		.put( function(req, res) {
 			//Handling the vote of the user on this poll
 			var ipaddress = req.headers['x-forwarded-for'];
-			console.log( req.body.vote );
+			
+			/** Search and attain the poll and specific vote to increment vote count and push ipaddress for validation **/
 			Poll.findOneAndUpdate(
-				{ "_id": req.body._id, "options._id" : req.body.vote._id },
+				{ _id: req.body._id, "options._id" : req.body.vote._id },
 				{
-					"$update": {
-						"$inc" : { "options.$.count" : 1 }
-					}
+					$inc : 
+						{ "options.$.count" : 1 },
+					$push :
+						{ voters : ipaddress }
 				},
 				{ new: true },
 				function(err, poll) {
@@ -106,4 +92,14 @@ module.exports = function (app, passport) {
 					res.status(200).end();
 				});
 		});
+		
+		app.route('/api/polls/:userid')
+			.get( function(req, res) {
+				
+			});
+		
+		app.route('/api/new/poll/:id')
+			.get( function(req, res) {
+				
+			});
 };

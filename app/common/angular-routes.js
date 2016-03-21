@@ -13,6 +13,16 @@
             controllerAs: 'pollCtrl'
         })
         
+        .when('/login', {
+            templateUrl: 'public/templates/pages/login/index.html',
+            controller: 'LoginController'
+        })
+        
+        .when('/signup', {
+            templateUrl: 'public/templates/pages/signup/index.html',
+            controller: 'SignupController'
+        })
+        
         .otherwise({ redirectTo: '/' });
     });
 })();

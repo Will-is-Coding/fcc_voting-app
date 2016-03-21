@@ -10,10 +10,7 @@ var voteSchema = new Schema( {
 
 var pollSchema = new Schema( {
     question: String,
-    options: [{
-        vote: String,
-        count: Number
-    }],
+    options: [voteSchema],
     voters: Array
 });
 

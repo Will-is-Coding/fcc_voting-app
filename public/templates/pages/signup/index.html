@@ -1,0 +1,22 @@
+<div class="signup-wrapper well">
+	<form ng-submit="attemptSignup(newUser)">
+		<div class="form-group">
+			<label for="usernameInput">Username</label>
+			<input type="text" class="form-control" id="usernameInput" placeholder="Username" ng-model="newUser.username">
+		</div>
+		<div class="form-group">
+			<label for="passwordInput">Password</label>
+			<input type="password" class="form-control" id="passwordInput" placeholder="Password" ng-model="newUser.password">
+		</div>
+		<div class="form-group">
+			<label for="confirmPasswordInput">Repeat Password</label>
+			<input type="password" class="form-control" id="confirmPasswordInput" placeholder="Repeat Password">
+		</div>
+		<div class="form-group">
+			<label for="emailInput">Email</label>
+			<input type="email" class="form-control" id="emailInput" placeholder="example@ex.com" ng-model="newUser.email">
+		</div>
+		
+		<button type="submit" class="btn btn-default">Signup</button>
+	</form>
+</div>
