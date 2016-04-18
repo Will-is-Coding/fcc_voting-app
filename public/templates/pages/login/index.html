@@ -1,5 +1,6 @@
 <div class="login-wrapper well">
-	<form ng-submit="attemptLogin(user)">
+	<form ng-submit="attemptLogin(user)" novalidate>
+		<h3>User: {{username}}</h3>
 		<div class="form-group">
 			<label for="usernameInput">Username</label>
 			<input type="text" class="form-control" id="usernameInput" placeholder="Username" ng-model="user.username">
@@ -7,10 +8,6 @@
 		<div class="form-group">
 			<label for="passwordInput">Password</label>
 			<input type="password" class="form-control" id="passwordInput" placeholder="Password" ng-model="user.password">
-		</div>
-		<div class="form-group">
-			<label for="emailInput">Email</label>
-			<input type="email" class="form-control" id="emailInput" placeholder="example@ex.com" ng-model="user.email">
 		</div>
 		
 		<button type="submit" class="btn btn-default">Login</button>

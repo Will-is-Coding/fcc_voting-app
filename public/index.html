@@ -14,12 +14,11 @@
 			<div class="col-lg-2 col-md-4 col-sm-6 col-xs-6 pull-left logo">
 				<h3><a href="#/">Voting App</a></h3>
 			</div>
-			<div class="col-lg-3 col-md-5 col-sm-6 col-xs-6 pull-right navinfo">
+			<!--Setup nav controller?-->
+			<div class="col-lg-3 col-md-5 col-sm-6 col-xs-6 pull-right navinfo" ng-controller="NavigationController as navCtrl" ng-init="setTabs()">
 				<nav>
 					<ul class="nav nav-tabs nav-justified">
-						<li role="presentation" class="active"><a href="#/">Home</a></li>
-						<li role="login"><a href="#/login">Login</a></li>
-						<li role="signup"><a href="#/signup">Sign Up</a></li>
+						<li ng-repeat="tab in tabs" ng-cloak><a ng-href={{tab.url}}>{{tab.name}}</a></li>
 					</ul>
 				</nav>
 			</div> <!-- End navinfo -->
@@ -27,8 +26,8 @@
 	</header>
 
 	<body>
-		<div class="container main" ng-controller="LoginController as loginCtrl">
-			<div ng-view></div>
+		<div class="container main">
+			<div ng-view></div> <!-- Angular Routing Area -->
 		</div>
 		
 		<!-- Load JS libraries -->
@@ -38,13 +37,20 @@
 			  crossorigin="anonymous"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular.min.js" type="text/javascript"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0/angular-route.min.js" type="text/javascript"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular-cookies.js" type="text/javascript"></script>
 		
-		<!-- Controller -->
 	  	<script src="common/app.js" type="text/javascript"></script>
 	  	<script src="common/angular-routes.js" type="text/javascript"></script>
+	  	
+	  	<!-- Controllers -->
 	  	<script src="controllers/homeController.js" type="text/javascript"></script>
 	  	<script src="controllers/pollController.js" type="text/javascript"></script>
 	  	<script src="controllers/loginController.js" type="text/javascript"></script>
+	  	<script src="controllers/signupController.js" type="text/javascript"></script>
+	  	<script src="controllers/navigationController.js" type="text/javascript"></script>
+	  	<!-- Services -->
+	  	<script src="services/userService.js" type="text/javascript"></script>
+	  	<script src="services/menuService.js" type="text/javascript"></script>
 	</body>
 
 </html>
