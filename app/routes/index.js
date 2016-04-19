@@ -29,31 +29,18 @@ function createPoll(poll_question, poll_options) {
 	return newPoll;
 }
 
+//Use expressJWT instead of verifyToken?
 module.exports = function (app, passport) {
 	app.use( bodyparser.json() );
 	app.use( bodyparser.urlencoded({extended: false}) );
 	app.use( cookieParser() );
 
-	var isAuthenticated = function (req, res, next) {
-		if (req.isAuthenticated())
-			return next();
-		res.redirect('#/');
-	};
-	
-	var requireAuth = function (req, res, next) {
-		if ( !req.user ) {
-			res.end('Not authorized.', 401);
-		} else {
-			next();
-		}
-	};
 	
 	var getUser = function (token) {
 			
 	};
 	
 	//Verify the client's token, attach the token to the request, then next middleware
-	//Use HTML headers?
 	var verifyToken = function (req, res, next) {
 		var token = req.cookies.token;
 		if (token !== undefined) {
@@ -62,22 +49,20 @@ module.exports = function (app, passport) {
 					throw err;
 				console.log('Has a verified cookie!!');
 				req.token = decoded;
-				
-				User.findById(decoded.id, function(err, user) {
-					if (err) throw err;
-					
-					//if (!user) {
-				//		res.status(404).json({success: false, message: 'Authentication failed. User not found'});
-					//} else if (user) {
-					if (user) {
-						req.username = user.username;
-						next();
-					}
-				});
+				req.username = decoded.username;
+				next();
 			});
 			
 		} else {
 			console.log('No cookie!!');
+			next();
+		}
+	};
+	
+	var requireAuth = function (req, res, next) {
+		if ( !req.token ) {
+			res.end('Not authorized.', 401);
+		} else {
 			next();
 		}
 	};
@@ -123,13 +108,16 @@ module.exports = function (app, passport) {
 				else {
 					var cookie_token = req.cookies.token;
 					if( cookie_token === undefined ) {
-						var expires = moment().add(1, 'days').valueOf(); // FIX 
+						var expires = moment().add(1, 'days').unix(); //Token expires in one day( in the form of seconds via unix timestamp )
 						var token = jwt.sign({
 							iss: "will_is_coding",
 							exp: expires,
-							id: user._id
+							sub: user._id,
+							username: user.username
 						}, app.get('superSecret'));
-						cookie_token = cookie.serialize('token', token, {secure: true, httpOnly: true});
+						
+						var nowDate = new Date(moment().add(1, 'days')); // cookie module expires with date object via unix timestamp in milliseconds
+						cookie_token = cookie.serialize('token', token, {secure: true, httpOnly: true, expires: nowDate});
 
 						res.status(200).cookie(cookie_token).json({
 							status: "New cookie for you",
@@ -159,8 +147,19 @@ module.exports = function (app, passport) {
 	});
 	
 	app.get('/api/signout', function(req, res) {
-		console.log(req.token);
-		res.end();
+		var now = moment().unix(); //Set to expire now
+		
+		var expToken = jwt.sign({
+							iss: "will_is_coding",
+							exp: now,
+							sub: req.token.sub,
+							username: req.username
+						}, app.get('superSecret'));
+		
+		console.log(expToken);
+		var nowDate = new Date(moment());
+		req.cookies.token = cookie.serialize('token', expToken, {secure: true, httpOnly: true, expires: nowDate } );
+		res.status(200).cookie(req.cookies.token).redirect('../');
 	});
 	
 		
@@ -201,11 +200,6 @@ module.exports = function (app, passport) {
 					res.status(200).end();
 				});
 		});
-		
-		app.route('/api/polls/:userid')
-			.get( function(req, res) {
-				
-			});
 		
 		app.route('/api/new/poll/:id')
 			.get( function(req, res) {
