@@ -19,3 +19,37 @@ header .logo {
 	background: white;
 	margin: 5px 5px !important;
 }
+
+/** Charts **/
+.legend {
+  font-size: 12px;
+}
+
+rect {
+  cursor: pointer;
+  stroke-wdith: 2;
+}
+
+rect.disabled {
+  fill: transparent !important;
+}
+
+.chart-area {
+  position: relative;
+  width: 100%;
+}
+
+.ttip {
+  background: #eee;
+  box-shadow: 0 0 5px #999999;
+  color: #333;
+  display: none;
+  font-size: 12px;
+  left: 130px;
+  padding: 10px;
+  position: absolute;
+  text-align: center;
+  top: 95px;
+  width: 80px;
+  z-index: 9999;
+}

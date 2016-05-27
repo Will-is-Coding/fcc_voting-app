@@ -123,14 +123,12 @@ module.exports = function (app, passport) {
 							status: "New cookie for you",
 							token: token,
 							expires: expires,
-							user: user.toJSON()
 						});
 					}
 					else {
 						res.status(200).json({
 							status: "You had a cookie already",
 							token: cookie_token,
-							user: user.toJSON()
 						});
 					}
 				}

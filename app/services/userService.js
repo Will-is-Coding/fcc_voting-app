@@ -1,9 +1,6 @@
-angular.module("VotingApp").factory('userService', function() {
-    var user = {};
-    var _username = '';
-    user.username = '';
+angular.module("VotingApp").factory('userService', ['$http', function($http) {
+    var user = { username: '' };
     user.setName = function(username) {
-        _username = username;
         this.username = username;
     };
     
@@ -12,4 +9,4 @@ angular.module("VotingApp").factory('userService', function() {
     };
     
     return user;
-});
+}]);

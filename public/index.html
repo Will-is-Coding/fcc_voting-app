@@ -17,8 +17,8 @@
 			<!--Setup nav controller?-->
 			<div class="col-lg-3 col-md-5 col-sm-6 col-xs-6 pull-right navinfo" ng-controller="NavigationController as navCtrl" ng-init="setTabs()">
 				<nav>
-					<ul class="nav nav-tabs nav-justified">
-						<li ng-repeat="tab in tabs" ng-cloak><a ng-href={{tab.url}}>{{tab.name}}</a></li>
+					<ul class="nav nav-tabs nav-justified"> <!-- Fix active classes -->
+						<li ng-repeat="tab in tabs" ng-cloak ng-class="{active: $index == 0}"><a ng-href={{tab.url}}>{{tab.name}}</a></li>
 					</ul>
 				</nav>
 			</div> <!-- End navinfo -->
@@ -41,6 +41,7 @@
 		
 	  	<script src="common/app.js" type="text/javascript"></script>
 	  	<script src="common/angular-routes.js" type="text/javascript"></script>
+	  	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js" type="text/javascript"></script>
 	  	
 	  	<!-- Controllers -->
 	  	<script src="controllers/homeController.js" type="text/javascript"></script>

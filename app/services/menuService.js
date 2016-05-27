@@ -22,11 +22,9 @@ angular.module('VotingApp').factory('menuService', ['userService', '$rootScope',
         if (userService.getName() !== '') { //If user logged in
             var userTab = new tab(userService.username, '#/user/' + userService.username);
             this.tabs = [ homeTab, userTab, signoutTab ];
-            console.log('with user...');
         }
         else {
             this.tabs = [ homeTab, loginTab, signupTab ];
-            console.log('with usual...');
         }
     };
     

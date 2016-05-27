@@ -1,7 +1,7 @@
 'use strict';
 
 (function() {
-    angular.module('VotingApp').controller('LoginController', [ '$http', '$scope', '$cookies', 'userService', 'menuService', function($http, $scope, $cookies, userService, menuService) {
+    angular.module('VotingApp').controller('LoginController', [ '$http', '$scope', '$location', 'userService', 'menuService', function($http, $scope, $location, userService, menuService) {
         $scope.user = { username: "", password: ""};
         
         $scope.attemptLogin = function(user) {
@@ -13,6 +13,7 @@
                         userService.setName(data.user.username);
                         menuService.notify();
                         $scope.username = userService.getName();
+                        $location.path('/#/');
                     }
                 })
                 .error( function (data) {
