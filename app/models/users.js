@@ -27,6 +27,7 @@ var User = new Schema({
         required: true
     },
     email: String,
+    ipaddress: String,
     token: String,
     active: Boolean
 }, {
@@ -47,7 +48,7 @@ User.pre('save', function(next) {
             bcrypt.hash(user.password, salt, function(err, hash) {
                 if(err) return next(err);
                 
-                user.password = hash;
+                //user.password = hash;
                 next();
             });
         });

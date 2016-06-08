@@ -19,8 +19,7 @@
             data = options;
           
           data.forEach(function(d) { d.enabled = true; });
-          
-          var width = 550, height = 400;
+          var width = $('.chart-area').width(), height = 400;
           var pieWidth = 360, pieHeight = 360;
           var radius = Math.min(pieWidth, pieHeight) / 2;
           

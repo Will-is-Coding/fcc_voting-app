@@ -23,6 +23,11 @@
             controller: 'SignupController'
         })
         
+        .when('/user/:username', {
+            templateUrl: 'public/templates/pages/user/index.html',
+            controller: 'UserController'
+        })
+        
         .otherwise({ redirectTo: '/' });
     });
 })();

@@ -1,3 +1,6 @@
+body {
+  overflow-x: none;
+}
 /** Header styles **/
 header {
 	margin-top: 10px;
@@ -21,6 +24,10 @@ header .logo {
 }
 
 /** Charts **/
+svg {
+  display: block;
+  margin: auto;
+}
 .legend {
   font-size: 12px;
 }
@@ -37,6 +44,9 @@ rect.disabled {
 .chart-area {
   position: relative;
   width: 100%;
+  display: inline-block;
+  vertical-align: middle;
+  overflow: hidden;
 }
 
 .ttip {
@@ -52,4 +62,22 @@ rect.disabled {
   top: 95px;
   width: 80px;
   z-index: 9999;
+}
+
+/**User Page **/
+.user-main {
+  height: 500px;
+}
+.sidebar {
+  background-color: #E4E4E4;
+  height: 100%;
+}
+
+.content {
+  background-color: #ADADAD;
+  height: 100%;
+}
+
+.user-main ul li {
+  margin-bottom: 15px;
 }

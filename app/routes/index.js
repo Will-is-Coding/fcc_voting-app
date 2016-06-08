@@ -92,18 +92,20 @@ module.exports = function (app, passport) {
 		}
 	});
 	
+	//Attempts to authenticate the user who is signed in already or attempting to sign in
 	app.post('/api/authenticate', function(req, res) {
 		User.findOne({
 			username: req.body.username
 		}, function(err, user) {
 			if (err) throw err;
 			
+			/** TODO: Send back one JSON with error of bad username, bad email, or both **/
 			if (!user) {
-				res.json({ success: false, message: 'Authentication failed. User not found.' });
+				res.status(200).json({ success: false, message: 'Authentication failed. User not found.' });
 			}
 			else if (user) {
 				if (user.password != req.body.password) {
-					res.json({ success: false, message: 'Authentication failed. Wrong password.' });
+					res.status(200).json({ success: false, message: 'Authentication failed. Wrong password.' });
 				}
 				else {
 					var cookie_token = req.cookies.token;
@@ -121,13 +123,16 @@ module.exports = function (app, passport) {
 
 						res.status(200).cookie(cookie_token).json({
 							status: "New cookie for you",
+							success: true,
 							token: token,
 							expires: expires,
+							username: user.username
 						});
 					}
 					else {
 						res.status(200).json({
 							status: "You had a cookie already",
+							success: false,
 							token: cookie_token,
 						});
 					}
@@ -141,9 +146,64 @@ module.exports = function (app, passport) {
 	});
 	
 	app.post('/api/signup', function(req, res) {
-		res.send('Not yet');
+		var username = req.body.username;
+		var password = req.body.password;
+		var password_confirm = req.body.password_confirm; //TODO: ADD FORM VERIFICATION
+		var email = req.body.email;
+
+		/** Find if the user already exists via the username and email, if not create it and send user a JWT **/
+		User.findOne({
+			username: username,
+			email: email
+		}, function(err, user) {
+			if (err)
+				throw err;
+				
+			if (user)
+				res.status(200).json({ success: false, message: 'A user with that username or email has already been created.' });
+			else {
+				User.create({username: username, password: password, email: email, ipaddress: req.headers["x-forwarded-for"]}, function(err, newUser) {
+					if (err)
+						throw err;
+					else {
+						var cookie_token = req.cookies.token;
+						if( cookie_token === undefined ) {
+							var expires = moment().add(1, 'days').unix(); //Token expires in one day( in the form of seconds via unix timestamp )
+							var token = jwt.sign({
+								iss: "will_is_coding",
+								exp: expires,
+								sub: newUser._id,
+								username: newUser.username
+							}, app.get('superSecret'));
+						
+							var nowDate = new Date(moment().add(1, 'days')); // cookie module expires with date object via unix timestamp in milliseconds
+							cookie_token = cookie.serialize('token', token, {secure: true, httpOnly: true, expires: nowDate});
+		
+							res.status(200).cookie(cookie_token).json({
+								status: "New cookie for you",
+								success: true,
+								token: token,
+								expires: expires,
+								username: newUser.username
+							});
+						}
+						else {
+							res.status(200).json({
+								status: "You had a cookie already, you need to sign out if you wish to sign into another account.",
+								success: false,
+								token: cookie_token
+							});
+						}
+					}
+					
+				});
+					
+			}
+		});
+		
 	});
 	
+	/** Deletes the user's JWT cookie **/
 	app.get('/api/signout', function(req, res) {
 		var now = moment().unix(); //Set to expire now
 		
@@ -174,6 +234,7 @@ module.exports = function (app, passport) {
 		.get( function(req, res, next) {
 			//Fetch the poll matching the id in the url
 			Poll.findOne({_id: req.params.id}, function(err, result) {
+				//Put options as CSVs?
 				if (err) throw err;
 				res.status(200).json(result);
 			});
@@ -207,6 +268,12 @@ module.exports = function (app, passport) {
 		app.get('/api/users', function(req, res) {
 			User.find({}, function(err, user) {
 				res.json(user);
+			});
+		});
+		
+		app.get('/api/deleteall', function(req, res) {
+			User.remove({}, function(err, user) {
+				res.status(200).json({message:"Deleted all users"});
 			});
 		});
 };
