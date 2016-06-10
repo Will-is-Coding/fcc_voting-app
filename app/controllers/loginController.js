@@ -1,5 +1,5 @@
 'use strict';
-
+//TODO: Form verification
 (function() {
     angular.module('VotingApp').controller('LoginController', [ '$http', '$scope', '$location', 'userService', 'menuService', function($http, $scope, $location, userService, menuService) {
         $scope.user = { username: "", password: ""};

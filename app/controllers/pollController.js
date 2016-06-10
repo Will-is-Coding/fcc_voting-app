@@ -1,5 +1,5 @@
 (function() {
-    
+    //TODO: Move chart creation into separate service
     angular.module('VotingApp').controller('PollController', ['$http', '$routeParams', '$scope', function($http, $routeParams, $scope) {
         var controller = this;
         this.myVote = {};
@@ -164,7 +164,6 @@
                 controller.poll = data;
                 controller.myVote = data.options[0]; //Set the initial value so no blank option
                 console.log(data);
-                console.log(typeof(data.options[0].count));
                 //D3 Json?
                 //controller.createChart(controller.parseVoteCount(data));
                 controller.createChart(data.options);

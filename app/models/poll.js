@@ -11,7 +11,9 @@ var voteSchema = new Schema( {
 var pollSchema = new Schema( {
     question: String,
     options: [voteSchema],
-    voters: Array
+    voters: Array,
+    creator: String,
+    creationDate: Number
 });
 
 // pollSchema.methods.userValidation = function() {} ?

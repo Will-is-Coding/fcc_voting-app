@@ -4,17 +4,10 @@ var mongoose = require('mongoose');
 var bcrypt = require('bcryptjs');
 var Schema = mongoose.Schema;
 
-/*var User = new Schema({
-	github: {
-		id: String,
-		displayName: String,
-		username: String,
-      publicRepos: Number
-	},
-   nbrClicks: {
-      clicks: Number
-   }
-});*/
+var Voted = new Schema({
+    poll_id: String,
+    vote: String
+})
 
 var User = new Schema({
     username: {
@@ -29,7 +22,9 @@ var User = new Schema({
     email: String,
     ipaddress: String,
     token: String,
-    active: Boolean
+    active: Boolean,
+    pollsCreated: [String],
+    pollsVoted: [Voted]
 }, {
     toObject: {
         virtuals: true

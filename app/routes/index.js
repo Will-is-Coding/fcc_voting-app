@@ -34,11 +34,6 @@ module.exports = function (app, passport) {
 	app.use( bodyparser.json() );
 	app.use( bodyparser.urlencoded({extended: false}) );
 	app.use( cookieParser() );
-
-	
-	var getUser = function (token) {
-			
-	};
 	
 	//Verify the client's token, attach the token to the request, then next middleware
 	var verifyToken = function (req, res, next) {
@@ -67,83 +62,73 @@ module.exports = function (app, passport) {
 		}
 	};
 	
+	//Every route attempts to verify the users JWT
 	app.use(verifyToken);
 
 	app.route('/')
 		.get( function (req, res) {
-		/*	if( req.username ) { 
-				var options = { 
-					headers: {
-						'username': req.username
-					}
-				};
-				res.stats(200).sendFile(path + '/public/index.html', options);
-			}*/
 			res.status(200).sendFile(path + '/public/index.html');
 		});
 	
 	//Gets called on index load in order to have a verified token and pass the client's username
-	app.get('/api/authenticate', function(req, res) {
-		console.log('un: ' + req.username);
-		if( req.username ) {
-			res.status(200).json({ success: true, username: req.username});
-		} else {
-			res.status(200).json({ success: false });
+	app.route('/api/authenticate')
+		.get( function(req, res) {
+			console.log('un: ' + req.username);
+			if( req.username ) {
+				res.status(200).json({ success: true, username: req.username});
+			} else {
+				res.status(200).json({ success: false });
 		}
-	});
-	
-	//Attempts to authenticate the user who is signed in already or attempting to sign in
-	app.post('/api/authenticate', function(req, res) {
-		User.findOne({
-			username: req.body.username
-		}, function(err, user) {
-			if (err) throw err;
-			
-			/** TODO: Send back one JSON with error of bad username, bad email, or both **/
-			if (!user) {
-				res.status(200).json({ success: false, message: 'Authentication failed. User not found.' });
-			}
-			else if (user) {
-				if (user.password != req.body.password) {
-					res.status(200).json({ success: false, message: 'Authentication failed. Wrong password.' });
+		})
+		//Attempts to authenticate the user who is signed in already or attempting to sign in
+		.post( function(req, res) {
+			User.findOne({
+				username: req.body.username
+			}, function(err, user) {
+				if (err) throw err;
+				
+				/** TODO: Send back one JSON with error of bad username, bad email, or both **/
+				if (!user) {
+					res.status(200).json({ success: false, message: 'Authentication failed. User not found.' });
 				}
-				else {
-					var cookie_token = req.cookies.token;
-					if( cookie_token === undefined ) {
-						var expires = moment().add(1, 'days').unix(); //Token expires in one day( in the form of seconds via unix timestamp )
-						var token = jwt.sign({
-							iss: "will_is_coding",
-							exp: expires,
-							sub: user._id,
-							username: user.username
-						}, app.get('superSecret'));
-						
-						var nowDate = new Date(moment().add(1, 'days')); // cookie module expires with date object via unix timestamp in milliseconds
-						cookie_token = cookie.serialize('token', token, {secure: true, httpOnly: true, expires: nowDate});
-
-						res.status(200).cookie(cookie_token).json({
-							status: "New cookie for you",
-							success: true,
-							token: token,
-							expires: expires,
-							username: user.username
-						});
+				else if (user) {
+					if (user.password != req.body.password) {
+						res.status(200).json({ success: false, message: 'Authentication failed. Wrong password.' });
 					}
 					else {
-						res.status(200).json({
-							status: "You had a cookie already",
-							success: false,
-							token: cookie_token,
-						});
+						var cookie_token = req.cookies.token;
+						if( cookie_token === undefined ) {
+							var expires = moment().add(1, 'days').unix(); //Token expires in one day( in the form of seconds via unix timestamp )
+							var token = jwt.sign({
+								iss: "will_is_coding",
+								exp: expires,
+								sub: user._id,
+								username: user.username
+							}, app.get('superSecret'));
+							
+							var nowDate = new Date(moment().add(1, 'days')); // cookie module expires with date object via unix timestamp in milliseconds
+							cookie_token = cookie.serialize('token', token, {secure: true, httpOnly: true, expires: nowDate});
+	
+							res.status(200).cookie(cookie_token).json({
+								status: "New cookie for you",
+								success: true,
+								token: token,
+								expires: expires,
+								username: user.username
+							});
+						}
+						else {
+							res.status(200).json({
+								status: "You had a cookie already",
+								success: false,
+								token: cookie_token,
+							});
+						}
 					}
 				}
-			}
+			});
 		});
-	});
 		
-	app.post('/api/login', function(req, res) {
-		res.send('Not yet');
-	});
 	
 	app.post('/api/signup', function(req, res) {
 		var username = req.body.username;
@@ -260,11 +245,24 @@ module.exports = function (app, passport) {
 				});
 		});
 		
-		app.route('/api/new/poll/:id')
-			.get( function(req, res) {
-				
+		app.route('/api/newpoll')
+			.post( function(req, res) {
+				var createdPoll = new Poll({
+					question: req.body.question,
+					voters: [],
+					options: req.body.options,
+					creator: req.username,
+					creationDate: moment().unix()
+				});
+
+				createdPoll.save( function(err) {
+					if (err) 
+						throw err;
+				});
+				res.status(200).json(createdPoll);
 			});
 		
+		/** Developing Purposes **/
 		app.get('/api/users', function(req, res) {
 			User.find({}, function(err, user) {
 				res.json(user);
@@ -274,6 +272,12 @@ module.exports = function (app, passport) {
 		app.get('/api/deleteall', function(req, res) {
 			User.remove({}, function(err, user) {
 				res.status(200).json({message:"Deleted all users"});
+			});
+		});
+		
+		app.get('/api/allpolls', function(req, res) {
+			Poll.find({}, function(err, poll) {
+				res.json(poll);
 			});
 		});
 };
