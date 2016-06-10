@@ -1,8 +1,9 @@
 'use strict';
 //var Poll = require('../models/poll.js');
 (function() {
-    angular.module('VotingApp').service('pollService', [ '$http', function($http) {
+    angular.module('VotingApp').service('pollService', [ '$http', '$routeParams', 'chartFactory', function($http, $routeParams, chartFactory) {
         this.options = [];
+        this.poll = {};
         var that = this;
         
         function option(text) {
@@ -28,11 +29,40 @@
             createVotes(optionData);
             var newPoll = { question: question, options: this.options, creator: 'test', creationDate: 0 };
             console.log(newPoll);
-            $http({method:'POST', url: 'api/newpoll', data: JSON.stringify(newPoll) })
+            $http({method:'POST', url: '/api/newpoll', data: JSON.stringify(newPoll) })
                 .then( function successCB(response) {
-                    console.log(response);
+                    that.poll = response.data;
                 },
                 function errorCB(error) { throw error; });
+        };
+        
+        this.fetchPoll = function(callback) {
+            $http({ method: 'GET', url: '/api/poll/' + $routeParams.id })
+                .then( function successCB(response) {
+                    console.log(response);
+                    callback(response.data);
+                    chartFactory.createChart(response.data.options);
+                }, function errorCB(error) {
+                    if(error)
+                        throw error;
+                });
+        };
+        
+        this.submitVote = function(userVote, callback) {
+            var voteData = JSON.stringify({ _id: this.poll._id, vote: userVote });
+            $http({method: 'PUT', url: '/api/poll/' + $routeParams.id, data: voteData})
+                .then( function successCB(response) {
+                    if( response.data.submitted === true )
+                        chartFactory.addVote(userVote);
+                    
+                    callback(response.data.submitted, response.data.message);
+                    
+                }, function errorCB(error) { 
+                    if(error) 
+                        throw error; 
+                });
+                
+                
         };
         
     }]);

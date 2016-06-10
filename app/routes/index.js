@@ -230,7 +230,7 @@ module.exports = function (app, passport) {
 			
 			/** Search and attain the poll and specific vote to increment vote count and push ipaddress for validation **/
 			Poll.findOneAndUpdate(
-				{ _id: req.body._id, "options._id" : req.body.vote._id },
+				{ _id: req.body._id, "options._id" : req.body.vote._id, "voters": { "$ne": ipaddress } },
 				{
 					$inc : 
 						{ "options.$.count" : 1 },
@@ -241,9 +241,13 @@ module.exports = function (app, passport) {
 				function(err, poll) {
 					if (err) throw err;
 					console.log('the poll now: ' + poll);
-					res.status(200).end();
+					
+					if( poll === null )
+						res.status(200).json({submitted: false, message: "You already voted!"});
+					else
+						res.status(200).json({submitted: true, message: "Vote has been submitted."});
 				});
-		});
+			});
 		
 		app.route('/api/newpoll')
 			.post( function(req, res) {
@@ -278,6 +282,13 @@ module.exports = function (app, passport) {
 		app.get('/api/allpolls', function(req, res) {
 			Poll.find({}, function(err, poll) {
 				res.json(poll);
+			});
+		});
+		
+		app.get('/api/deletevoters/:id', function(req, res) {
+			Poll.findOneAndUpdate({ _id: req.params.id }, function(err, poll) {
+				poll.voters = [];
+				res.status(200).json(poll);
 			});
 		});
 };

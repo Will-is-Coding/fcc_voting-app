@@ -38,6 +38,7 @@ app.use('/controllers', express.static(process.cwd() + '/app/controllers'));
 app.use('/public', express.static(process.cwd() + '/public'));
 app.use('/common', express.static(process.cwd() + '/app/common'));
 app.use('/services', express.static(process.cwd() + '/app/services'));
+app.use('/factories', express.static(process.cwd() + '/app/factories'));
 
 /*app.all("*", function(req, res, next) {
     next(new NotFoundError('404'));
