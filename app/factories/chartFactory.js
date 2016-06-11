@@ -16,15 +16,15 @@
           return false;
         };
         
-        var svgCreation = function(data) {
-            console.log(data);
-            var width = $('.chart-area').width(), height = 400;
+        var svgCreation = function(data, id) {
+            console.log(id);
+            var width = $(id).width(), height = 400;
             var pieWidth = 360, pieHeight = 360;
             var radius = Math.min(pieWidth, pieHeight) / 2;
           
             var color = d3.scale.category20b();
           
-            var svg = d3.select(".chart-area")
+            var svg = d3.select(id)
                 .append("svg")
                 .attr("width", width)
                 .attr("height", height)
@@ -38,7 +38,7 @@
                 .value(function(d) { return d.count; })
                 .sort(null);
             
-            var ttip = d3.select(".chart-area")
+            var ttip = d3.select(id)
                 .append('div')
                 .attr('class', 'ttip');
             
@@ -155,7 +155,7 @@
               .text(function(d) { return d; });
         };
         
-        service.createChart = function(options, pollID) {
+        service.createChart = function(options, id) {
           if(!hasVotes(options))
             var data = [{vote:"No Votes", count: 1}];
           else
@@ -163,7 +163,7 @@
           
           data.forEach(function(d) { d.enabled = true; });
           _data = data;
-          svgCreation(data);
+          svgCreation(data, id);
           
         };
         

@@ -4,20 +4,23 @@
        $scope.username = userService.getName();
        $scope.newPoll = { question: "", options: [] };
        $scope.question = '';
-       $scope.options = [{placeholder: "Option", added: false, button: '+', optText: ''}];
+       $scope.myPolls = [];
+       
+       function _option() {
+           this.placeholder = "Option";
+           this.added = false;
+           this.button = '+';
+           this.optText = '';
+       }
+       
+       $scope.options = [new _option()];
        
        
        $scope.addOpt = function(option, index) {
           option.added = true;
           option.button = "-";
-          console.log(index);
 
-          $scope.options.push({
-             placeholder: option.placeholder,
-             added: false,
-             button: '+',
-             optText: ''
-          });
+          $scope.options.push(new _option());
        };
        
        $scope.removeOpt = function(option, index) {
@@ -28,8 +31,22 @@
 
        
        $scope.createPoll = function() {
-           pollService.createPoll($scope.question, $scope.options, 'testUsername' );
-           $scope.options = [{placeholder: "Option", added: false, button: '+', vote: ''}];
+           pollService.createPoll($scope.question, $scope.options);
+           $scope.options = [new _option()];
        };
+       
+       $scope.getMyPolls = function() {
+           userService.getMyPolls( function(polls) {
+               $scope.myPolls = polls;
+               setupMyPolls();
+           });
+       };
+       
+       function setupMyPolls() {
+           for( var i = 0; i < $scope.myPolls.length; i++ ) {
+               $scope.myPolls[i].totalVotes = pollService.totalVotes($scope.myPolls[i]);
+               pollService.buildChart($scope.myPolls[i].options, "#chart-" + i);
+           }
+       }
    }]); 
 })();

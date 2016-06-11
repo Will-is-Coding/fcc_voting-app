@@ -20,7 +20,7 @@ angular.module('VotingApp').factory('menuService', ['userService', '$rootScope',
     menu.setTabs = function() {
         console.log('setting...');
         if (userService.getName() !== '') { //If user logged in
-            var userTab = new tab(userService.username, '#/user/' + userService.username);
+            var userTab = new tab(userService.getName(), '#/user/' + userService.getName());
             this.tabs = [ homeTab, userTab, signoutTab ];
         }
         else {
@@ -46,15 +46,7 @@ angular.module('VotingApp').factory('menuService', ['userService', '$rootScope',
         console.log('notifying');
     };
     
-    //Move?
-    $http({ method: 'GET', url: '/api/authenticate'}).then( function success(response) {
-        if (response.data.username) {
-            userService.setName(response.data.username);
-            menu.notify();
-        }
-    }, function error(response) {
-        console.log('error');
-    });
+    userService.requestName( function() { menu.notify(); });
     
     return menu;
 }]);

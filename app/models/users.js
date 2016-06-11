@@ -7,24 +7,16 @@ var Schema = mongoose.Schema;
 var Voted = new Schema({
     poll_id: String,
     vote: String
-})
+});
 
 var User = new Schema({
-    username: {
-        type: String,
-        unique: true,
-        required: true
-    },
-    password: {
-        type: String,
-        required: true
-    },
+    username: String,
+    password: String,
     email: String,
     ipaddress: String,
     token: String,
     active: Boolean,
-    pollsCreated: [String],
-    pollsVoted: [Voted]
+    type: String
 }, {
     toObject: {
         virtuals: true

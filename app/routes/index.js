@@ -40,8 +40,12 @@ module.exports = function (app, passport) {
 		var token = req.cookies.token;
 		if (token !== undefined) {
 			jwt.verify(token, app.get('superSecret'), function(err, decoded) {
-				if (err)
+				if (err) {
 					throw err;
+					req.username = undefined;
+					req.token	 = undefined;
+					next();
+				}
 				console.log('Has a verified cookie!!');
 				req.token = decoded;
 				req.username = decoded.username;
@@ -50,6 +54,8 @@ module.exports = function (app, passport) {
 			
 		} else {
 			console.log('No cookie!!');
+			req.username = undefined;
+			req.token	 = undefined;
 			next();
 		}
 	};
@@ -62,8 +68,19 @@ module.exports = function (app, passport) {
 		}
 	};
 	
+	var loggedIn = function (req, res, next) {
+		if( req.token !== undefined && req.username !== undefined)
+			req.isLoggedIn = true;
+		else
+			req.isLoggedIn = false;
+			
+		console.log(req.username + ' ' + req.isLoggedIn);
+		next();
+	};
+	
 	//Every route attempts to verify the users JWT
 	app.use(verifyToken);
+	app.use(loggedIn);
 
 	app.route('/')
 		.get( function (req, res) {
@@ -147,7 +164,7 @@ module.exports = function (app, passport) {
 			if (user)
 				res.status(200).json({ success: false, message: 'A user with that username or email has already been created.' });
 			else {
-				User.create({username: username, password: password, email: email, ipaddress: req.headers["x-forwarded-for"]}, function(err, newUser) {
+				User.create({username: username, password: password, email: email, type: 'admin', ipaddress: req.headers["x-forwarded-for"]}, function(err, newUser) {
 					if (err)
 						throw err;
 					else {
@@ -224,18 +241,24 @@ module.exports = function (app, passport) {
 				res.status(200).json(result);
 			});
 		})
+		//Submitting Vote
 		.put( function(req, res) {
 			//Handling the vote of the user on this poll
 			var ipaddress = req.headers['x-forwarded-for'];
 			
-			/** Search and attain the poll and specific vote to increment vote count and push ipaddress for validation **/
+			/** Search and attain the poll and specific vote to increment vote count and push ipaddress for validation. Checks if the ipaddres and user has not voted before **/
 			Poll.findOneAndUpdate(
-				{ _id: req.body._id, "options._id" : req.body.vote._id, "voters": { "$ne": ipaddress } },
+				{ _id: req.body._id, "options._id" : req.body.vote._id, "voters.ipaddress": { $ne: ipaddress }, "voters.username": { $ne: req.body.username } },
 				{
-					$inc : 
-						{ "options.$.count" : 1 },
-					$push :
-						{ voters : ipaddress }
+					$inc : { "options.$.count" : 1 },
+					$push:
+					{ 
+						'voters': 
+						{
+							'ipaddress': ipaddress, 'username': req.username
+						}
+					}
+					
 				},
 				{ new: true },
 				function(err, poll) {
@@ -247,24 +270,70 @@ module.exports = function (app, passport) {
 					else
 						res.status(200).json({submitted: true, message: "Vote has been submitted."});
 				});
-			});
-		
-		app.route('/api/newpoll')
+			})
+			/** Adds an option to a poll if user is logged in **/
+			//TODO: Move to /api/poll/:id/option ? Allow removal of options by admin/creator?
 			.post( function(req, res) {
+				if( req.isLoggedIn ) {
+					Poll.findByIdAndUpdate(
+						req.params.id, 
+						{ $push: { "options": { vote: req.body.vote, count: 0 } } },
+						{ new: true },
+						function(err, poll) {
+							res.status(200).json(poll);
+						});
+				}
+				else {
+					res.status(200).json({message: "Failed to add option. You must be logged in to add options."});
+				}
+			})
+			/** Delete specific poll if user is the creator or an admin **/
+			.delete( function(req, res) {
+				
+			});
+			
+		
+		app.route('/api/createpoll')
+			.post( function(req, res) {
+				//TODO: Do findOneAndUpdate on the chance a question is the same( to all lower )
 				var createdPoll = new Poll({
 					question: req.body.question,
 					voters: [],
 					options: req.body.options,
-					creator: req.username,
-					creationDate: moment().unix()
+					creationDate: { unix: moment().unix(), human: moment().format("MMM DD, YYYY") }
 				});
+				
+				if ( req.username !== undefined ) {
+					createdPoll.creator.name = req.username;
+					createdPoll.creator.authenticated = true;
+				}
+				else {
+					createdPoll.creator.name = 'Anonymous';
+					createdPoll.creator.authenticated = false;
+				}
+				
+				createdPoll.creator.ipaddress = req.headers['x-forwarded-for'];
 
 				createdPoll.save( function(err) {
 					if (err) 
 						throw err;
 				});
+				
+				
 				res.status(200).json(createdPoll);
 			});
+			
+		app.route('/api/user/polls')
+			.get( function(req, res) {
+				Poll.find({ 'creator.name': req.username }, function(err, polls) {
+					res.status(200).json(polls);
+				});
+			});
+			
+		app.get('/shared/:poll', function (req, res) {
+			
+		});
+		
 		
 		/** Developing Purposes **/
 		app.get('/api/users', function(req, res) {
@@ -291,4 +360,13 @@ module.exports = function (app, passport) {
 				res.status(200).json(poll);
 			});
 		});
+		
+		app.post('/api/deletepoll/:id', function(req, res) {
+			Poll.findOneAndRemove({ _id: req.params.id }, function(err, poll) {
+				if(err)
+					throw err;
+				res.status(200).redirect('../../');
+			});
+		});
+		
 };

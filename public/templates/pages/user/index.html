@@ -4,7 +4,7 @@
             <div class="sidebar col-lg-3 col-md-4 col-sm-5 col-xs-5">
                 <ul class="nav nav-pills nav-stacked">
                     <li class="active"><a href="#">My Polls</a></li>
-                    <li><a href="#">My Votes</a></li>
+                    <li><a href="#/user/Tester" ng-click="getMyPolls()">My Votes</a></li>
                     <li><a href="#">Settings</a></li>
                 </ul>
             </div>
@@ -38,6 +38,22 @@
                         </div>
                         <div id="current-poll" class="text-center">
                             <h3>Your Current Polls</h3>
+                            <div id="poll-container">
+                                <div class="poll row" ng-repeat="poll in myPolls">
+                                    <div class="my-poll-question col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                                        <h4>{{poll.question}}</h4>
+                                    </div>
+                                    <div class="my-poll-votes col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                                        <h4>{{poll.totalVotes}} Votes</h4>
+                                    </div>
+                                    <div class="my-poll-date col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                                        <h4>{{poll.creationDate.human}}</h4>
+                                    </div>
+                                    <div class="poll-full row">
+                                        <div id="{{ 'chart-' + $index }}" class="chart"></div>
+                                    </div>
+                                </div>
+                            </div>
                             <!-- Accordian with poll questions, open to reveal chart -->
                         </div>
                     </div>
