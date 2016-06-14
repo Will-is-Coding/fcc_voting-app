@@ -10,7 +10,7 @@
         pollService.fetchPoll( function(poll) {
           controller.poll = poll;
           controller.myVote = poll.options[0];
-        }, ".chart-area");
+        }, ".chart-container");
         
         $scope.addOption = function() {
           pollService.addOption($scope.newOpt);

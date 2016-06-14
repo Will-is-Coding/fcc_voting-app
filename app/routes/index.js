@@ -146,6 +146,8 @@ module.exports = function (app, passport) {
 			});
 		});
 		
+	/**TODO: ROUTE FOR /user/:username, PROTECT ONLY FOR AUTHORIZED **/
+		
 	
 	app.post('/api/signup', function(req, res) {
 		var username = req.body.username;
@@ -322,7 +324,8 @@ module.exports = function (app, passport) {
 				
 				res.status(200).json(createdPoll);
 			});
-			
+		
+		/** TODO: Protect **/
 		app.route('/api/user/polls')
 			.get( function(req, res) {
 				Poll.find({ 'creator.name': req.username }, function(err, polls) {

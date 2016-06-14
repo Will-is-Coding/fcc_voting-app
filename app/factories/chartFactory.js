@@ -17,19 +17,20 @@
         };
         
         var svgCreation = function(data, id) {
-            console.log(id);
             var width = $(id).width(), height = 400;
             var pieWidth = 360, pieHeight = 360;
             var radius = Math.min(pieWidth, pieHeight) / 2;
           
             var color = d3.scale.category20b();
-          
+
             var svg = d3.select(id)
-                .append("svg")
-                .attr("width", width)
-                .attr("height", height)
-                .append("g")
-                .attr("transform", "translate(" + (width/2) + "," + (radius) +")");
+              .append('svg')
+              .attr('width', '100%')
+              .attr('height', '100%')
+              .attr('viewBox', '0 0 ' + width + ' ' + height)
+              .attr('preserveAspectRatio', 'xMinYMin')
+              .append('g')
+              .attr("transform", "translate(" + (width/2) + "," + (radius) +")");
             
             arc = d3.svg.arc()
                 .outerRadius(radius);

@@ -6,6 +6,7 @@
        $scope.question = '';
        $scope.myPolls = [];
        
+       
        function _option() {
            this.placeholder = "Option";
            this.added = false;
@@ -38,15 +39,22 @@
        $scope.getMyPolls = function() {
            userService.getMyPolls( function(polls) {
                $scope.myPolls = polls;
-               setupMyPolls();
+               $scope.setupMyPolls();
            });
        };
        
-       function setupMyPolls() {
+       
+       $scope.setupMyPolls = function() {
            for( var i = 0; i < $scope.myPolls.length; i++ ) {
                $scope.myPolls[i].totalVotes = pollService.totalVotes($scope.myPolls[i]);
-               pollService.buildChart($scope.myPolls[i].options, "#chart-" + i);
+               $scope.myPolls[i].displayPoll = false;
            }
-       }
+       };
+       
+       $scope.drawPoll = function(poll, id) {
+           console.log(id + " > svg");
+           if( $(id + " > svg").length === 0 )
+                pollService.buildChart(poll.options, id);
+       };
    }]); 
 })();
