@@ -1,0 +1,40 @@
+<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <h2 id="new-poll-header">Create your own Ballot Box</h2>
+    </div>
+</div>
+<div class="row">
+    <div id="new-poll" class="col-lg-12 col-md-12 col-sm-12 col-xs-12" ng-hide="created">
+        <div class="row">
+            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12 col-center">
+                <form ng-submit="createPoll()">
+                    <div class="form-group">
+                        <label for="pollQuestion">The Poll</label>
+                        <input type="text" class="form-control" id="pollQuestion" ng-model="poll" placeholder="Poll Question">
+                    </div>
+                    <div class="form-group">
+                        <label for="pollOptions">Options</label>
+                        <div class="input-group" ng-repeat="option in options">
+                            <input type="text" class="form-control poll-option" placeholder="Add Option" ng-model="option.optText">
+                            <span class="input-group-btn" class="add-option">
+                                <button class="btn glyphicon" ng-class="{ 'btn-success glyphicon-ok' : !option.added, 'btn-danger glyphicon-remove' : option.added }" type="button" ng-click="option.added ? removeOpt(option, $index) : addOpt(option, $index)"></button>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><input type="checkbox" name="private" ng-model="secret"> Private Poll </label>
+                    </div>
+                    <button type="submit" class="btn btn-default">Create</button>
+                    <button class="btn btn-default">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="created-poll" class="col-lg-12 col-md-12 col-sm-12 col-xs-12" ng-show="created">
+        <h3>Your Ballot Box Is Now Open!</h3>
+        <p>It is now on the home page(if not marked as private).</p>
+        <button class="btn btn-default">Share!</button>
+        <p>Would you like to make another?</p>
+        <button class="btn btn-default">New Poll</button>
+    </div>
+</div>

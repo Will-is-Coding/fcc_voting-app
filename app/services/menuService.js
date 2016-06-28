@@ -7,7 +7,7 @@ angular.module('VotingApp').factory('menuService', ['userService', '$rootScope',
         tabs: [],
     };
     
-    var tab = function(name, url) {
+    /*var tab = function(name, url) {
         this.name = name;
         this.url = url;
     };
@@ -19,8 +19,8 @@ angular.module('VotingApp').factory('menuService', ['userService', '$rootScope',
     
     menu.setTabs = function() {
         console.log('setting...');
-        if (userService.getName() !== '') { //If user logged in
-            var userTab = new tab(userService.getName(), '#/user/' + userService.getName());
+        if (userService.getUsername() !== '') { //If user logged in
+            var userTab = new tab(userService.getUsername(), '#/user/' + userService.getName());
             this.tabs = [ homeTab, userTab, signoutTab ];
         }
         else {
@@ -44,9 +44,9 @@ angular.module('VotingApp').factory('menuService', ['userService', '$rootScope',
     menu.notify = function() {
         $rootScope.$emit('updating-tabs-event');
         console.log('notifying');
-    };
+    };*/
     
-    userService.requestName( function() { menu.notify(); });
+    //userService.requestName( function() { menu.notify(); });
     
     return menu;
 }]);

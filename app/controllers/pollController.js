@@ -1,28 +1,33 @@
 (function() {
     //TODO: Move chart creation into separate service
-    angular.module('VotingApp').controller('PollController', ['$scope', 'pollService', function($scope, pollService) {
-        var controller = this;
-        this.myVote = {};
+    angular.module('VotingApp').controller('PollController', ['$scope', '$routeParams', 'pollService', 'userService', function($scope, $routeParams, pollService, userService) {
+        $scope.loggedIn = false;
+        var chartID = "#single-chart";
         
-        $scope.newOpt = '';
+        function setupPoll(err, poll) {
+            $scope.poll = poll;
+            $scope.poll.totalVotes = pollService.totalVotes($scope.poll);
+            $scope.userVote = $scope.poll.options[0];
+            pollService.buildChart($scope.poll.options, chartID, 3);
+        }
         
-        /**On load get the specific poll's data **/
-        pollService.fetchPoll( function(poll) {
-          controller.poll = poll;
-          controller.myVote = poll.options[0];
-        }, ".chart-container");
+        pollService.fetchPoll($routeParams.id, setupPoll);
         
-        $scope.addOption = function() {
-          pollService.addOption($scope.newOpt);
+        function checkUserStatus() {
+            if( userService.getUsername() === '' )
+                $scope.loggedIn = false;
+            else
+                $scope.loggedIn = true;
+        }
+        checkUserStatus();
+        
+        $scope.vote = function(userVote, pollID) {
+            pollService.submitVote(userVote, pollID);
         };
-
-        /** Save the user's vote to the specificed poll **/
-        this.addVote = function(userVote) {
-            pollService.submitVote(userVote, function(submitted, message) {
-              if( submitted )
-                  userVote.count += 1;
-            });
-        };
         
+        $scope.addOption = function(newOpt, poll) {
+            pollService.addOption(newOpt, poll);
+        };
+    
     }]);
 })();

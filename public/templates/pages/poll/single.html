@@ -1,0 +1,71 @@
+<div id="single-main" class="container">
+    <div class="row" id="poll-question">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-sm-12">
+            <h3>{{ poll.question }}</h3>
+        </div>
+    </div>
+    <div class="row poll-information">
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
+            <h4>Created By {{ poll.creator.name }}</h4>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
+            <h4>With {{ poll.totalVotes }} Votes</h4>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
+            <h4>On {{ poll.creationDate.human }}</h4>
+        </div>
+    </div>
+    <div class="row">
+		<div class="col-lg-7 col-md-7 col-sm-7 col-xs-12 pull-left">
+			<div class="chart" id="single-chart"></div>
+		</div>
+		<div class="col-lg-5 col-md-5 col-sm-5 col-xs-12 pull-right">
+			<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+				<div class="row">
+					<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center">
+						<h4>Results</h4>
+					</div>
+				</div>
+				<div class="row row-centered">
+					<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 col-centered" ng-repeat="option in poll.options">
+						<b>{{option.vote}}: </b> <span>{{option.count}}</span>
+					</div>
+				</div>
+			</div>
+			<!-- TODO: Form verification with feedback -->
+			<form ng-submit="vote(poll.userVote.vote, poll._id)" class="single-poll-form">
+				<div class="form-group">
+					<label for="voteOption" class="pull-left">Your Vote</label>
+					<select class="form-control" id="voteOption" name="voteOption" ng-model="userVote" ng-options="option.vote for option in poll.options"></select>
+				</div>
+				<button type="submit" class="btn btn-primary">Vote</button>
+			</form>
+			<!-- TODO: Form verification with feedback -->
+			<form name="addOptForm" ng-submit="addOption(userNewOption, poll)" class="single-poll-form" novalidate>
+				<div class="form-group has-feedback" ng-class="{ 'has-error' : (addOptForm.newOption.$error.minlength || addOptForm.newOption.$invalid) && !addOptForm.newOption.$pristine, 'has-success' : addOptForm.newOption.$valid && !addOptForm.newOption.$pristine}">
+					<label for="newOption" class="pull-left">New Option</label>
+					<input 
+					id="newOption" name="newOption" ng-model="userNewOption" 
+					class="form-control"
+					ng-class=""
+					placeholder="{{loggedIn === true ? 'Add an Option' : 'You Must Be Signed In'}}" 
+					ng-minlength="1" 
+					aria-describedby="" 
+					ng-disabled="{{loggedIn === false}}" 
+					required>
+					<span class="glyphicon form-control-feedback"
+					ng-class="{{(addOptForm.newOption.$error.minlength || addOptForm.newOption.$invalid) && !addOptForm.newOption.$pristine ? 'glyphicon-remove' : 'glyphicon-ok'}}" 
+					aria-hidden="true"></span>
+					<span id="inputSuccess2Status" class="sr-only">(success)</span>
+					<span ng-hide="true" class="help-block">You've already submitted an option to this poll</span>
+					<span ng-hide="true" class="help-block">This option is already available</span>
+					<span ng-show="addOptForm.newOption.$invalid && addOptForm.newOption.$dirty" class="help-block">It must be at least 1 character long</p>
+				</div>
+				<button type="submit" class="btn btn-primary pull-right" ng-disabled="{{!loggedIn || addOptForm.$invalid}}">Add</button>
+			</form>
+		</div>
+	</div>
+	<div class="row" id="legend-information">
+	    <span>* Click the legend colors to disclude/include options</span>
+	</div>
+</div>

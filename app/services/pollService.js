@@ -11,30 +11,52 @@
             this.count = 0;
         }
         
+        
         //TODO: Use Regex or something to only add votes without only spaces and longer than one character
         function createVotes(optionData) {
             for( var i = 0; i < optionData.length; i++ ) {
-                 if(optionData[i].added === true && optionData[i].optText.length > 0) {
-                     var newOpt = new option(optionData[i].optText);
+                 if(optionData[i].length > 0) {
+                     var newOpt = new option(optionData[i]);
                      that.options.push(newOpt);
-                 }
+                }
             }
         }
         
-        this.addOption = function(option) {
-            var newOption = { vote: option, count: 0 };
-            console.log('/api/poll/' + $routeParams.id);
-            $http({method: 'POST', url: '/api/poll/' + $routeParams.id, data: JSON.stringify(newOption)})
+        this.isUniqueOption = function(newOption, poll) {
+            for( var i = 0; i < poll.options.length; i++ ) {
+                if( poll.options[i].vote.toLowerCase() === newOption.toLowerCase() )
+                    return false;
+            }
+            return true;
+        };
+        
+        this.addOption = function(option, poll) {
+            if( this.isUniqueOption(option, poll) ) {
+                var newOption = { vote: option, count: 0 };
+                console.log('/api/poll/' + poll._id + '/' + option);
+                $http({method: 'PUT', url: '/api/poll/' + poll._id + '/' + option, data: JSON.stringify(newOption)})
+                    .then( function successCB(response) {
+                        console.log(response.data.message);
+                    }, function errorCB(error) {
+                        
+                    });
+            }
+        };
+        
+        this.updateOptions = function(newOptions, removedOptions, poll_id) {
+            var updateInfo = { _id: poll_id, newOptions: newOptions, removedOptions: removedOptions };
+            $http({method: 'POST', url: '/api/poll/' + poll_id, data: JSON.stringify(updateInfo)})
                 .then( function successCB(response) {
-                    
+                    console.log(response);
                 }, function errorCB(error) {
-                    
+                    throw error; 
                 });
         };
         
-        this.createPoll = function(question, optionData) {
+        this.createPoll = function(question, optionData, secret, draft) {
             createVotes(optionData);
-            var newPoll = { question: question, options: this.options };
+            console.log(this.options);
+            var newPoll = { question: question, options: this.options, secret: secret, draft: draft };
             $http({method:'POST', url: '/api/createpoll', data: JSON.stringify(newPoll) })
                 .then( function successCB(response) {
                     that.poll = response.data;
@@ -43,28 +65,29 @@
                 function errorCB(error) { throw error; });
         };
         
-        this.fetchPoll = function(callback, id) {
-            $http({ method: 'GET', url: '/api/poll/' + $routeParams.id })
+        this.fetchPoll = function(pollID, callback) {
+            $http({ method: 'GET', url: '/api/poll/' + pollID })
                 .then( function successCB(response) {
                     console.log(response);
                     that.poll = response.data;
-                    callback(response.data);
-                    chartFactory.createChart(response.data.options, id);
+                    callback(null, response.data);
                 }, function errorCB(error) {
                     if(error)
-                        throw error;
+                        console.log(error, null);
                 });
         };
         
-        this.submitVote = function(userVote, callback) {
-            var voteData = JSON.stringify({ _id: this.poll._id, vote: userVote });
+        this.submitVote = function(userVote, pollID) {
+            var voteData = JSON.stringify({ _id: pollID, vote: userVote });
             console.log(voteData);
-            $http({method: 'PUT', url: '/api/poll/' + $routeParams.id, data: voteData})
+            //Previous version used $routeParams.id
+            $http({method: 'PUT', url: '/api/poll/' + pollID, data: voteData})
                 .then( function successCB(response) {
                     if( response.data.submitted === true )
                         chartFactory.addVote(userVote);
-                    
-                    callback(response.data.submitted, response.data.message);
+                    else
+                        console.log(response.data.message);
+                    //callback(response.data.submitted, response.data.message);
                     
                 }, function errorCB(error) { 
                     if(error) 
@@ -72,8 +95,8 @@
                 });
         };
         
-        this.buildChart = function(options, id) {
-           chartFactory.createChart(options, id);  
+        this.buildChart = function(options, id, widthRatio) {
+           chartFactory.createChart(options, id, widthRatio);  
         };
         
         this.totalVotes = function(poll) {
@@ -82,6 +105,17 @@
                 count += poll.options[i].count;
             }
             return count;
+        };
+        
+        this.deletePoll = function(pollID) {
+            console.log(pollID);
+          $http({method: 'DELETE', url: '/api/poll/' + pollID})
+            .then( function successCB(response) {
+                console.log(response);
+            }, function errorCB(error) {
+                if( error )
+                    throw error;
+            });
         };
         
     }]);

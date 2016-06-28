@@ -61,7 +61,7 @@ module.exports = function (app, passport) {
 	};
 	
 	var requireAuth = function (req, res, next) {
-		if ( !req.token ) {
+		if ( !req.token && !req.isLoggedIn ) {
 			res.end('Not authorized.', 401);
 		} else {
 			next();
@@ -78,6 +78,37 @@ module.exports = function (app, passport) {
 		next();
 	};
 	
+	var createNewOptions = function(toCreate) {
+		var newOptions = [];
+		for( var i = 0; i < toCreate.length; i++ ) {
+			newOptions.push({ count: 0, vote: toCreate[i].optText });
+		}
+		return newOptions;
+	};
+	
+	var removePollOptions = function(pollID, toRemove, errorAdding, res) {
+		/** Remove options from poll **/
+		Poll.findByIdAndUpdate(pollID,
+			{
+				$pull: { 'options': { _id: { $in: toRemove } } }
+			},
+			{
+				new: true
+			},
+			function(err, poll) {
+				if( err ) {
+					res.status(200).json({message: "Error removing options!", error: err});
+					throw err;
+				}
+				if( poll !== null ) {
+					res.status(200).json({message: "Success", errorAdding: errorAdding, errorRemoving: false, poll: poll});
+				}
+				else {
+					res.status(200).json({message: "Error", errorAdding: errorAdding, errorRemoving: true});
+				}
+			});
+	};
+	
 	//Every route attempts to verify the users JWT
 	app.use(verifyToken);
 	app.use(loggedIn);
@@ -90,11 +121,11 @@ module.exports = function (app, passport) {
 	//Gets called on index load in order to have a verified token and pass the client's username
 	app.route('/api/authenticate')
 		.get( function(req, res) {
-			console.log('un: ' + req.username);
-			if( req.username ) {
-				res.status(200).json({ success: true, username: req.username});
+			//Info from loggedIn middleware
+			if( req.isLoggedIn ) {
+				res.status(200).json({ success: true, username: req.username, admin: false});
 			} else {
-				res.status(200).json({ success: false });
+				res.status(200).json({ success: false, username: undefined, admin: false });
 		}
 		})
 		//Attempts to authenticate the user who is signed in already or attempting to sign in
@@ -208,6 +239,7 @@ module.exports = function (app, passport) {
 	});
 	
 	/** Deletes the user's JWT cookie **/
+	/** TODO: Check if user has cookie or signed in **/
 	app.get('/api/signout', function(req, res) {
 		var now = moment().unix(); //Set to expire now
 		
@@ -225,15 +257,17 @@ module.exports = function (app, passport) {
 	});
 	
 		
+	/** TODO: Protect **/
 	app.route('/api/fetchpolls')
 		.get( function(req, res) {
-			//Retrieve all poll ids for the link and the question to display
-			Poll.find({}).select('_id question').exec( function(err, results) {
+			//Retrieve all polls from the database
+			Poll.find({}).exec( function(err, results) {
 				if (err) throw err;
 				res.status(200).json(results);
 			});
 		});
-		
+	
+	/** TODO: Protect **/
 	app.route('/api/poll/:id')
 		.get( function(req, res, next) {
 			//Fetch the poll matching the id in the url
@@ -243,14 +277,14 @@ module.exports = function (app, passport) {
 				res.status(200).json(result);
 			});
 		})
-		//Submitting Vote
+		/** Submitting Vote **/
 		.put( function(req, res) {
 			//Handling the vote of the user on this poll
 			var ipaddress = req.headers['x-forwarded-for'];
-			
+			console.log( req.body );
 			/** Search and attain the poll and specific vote to increment vote count and push ipaddress for validation. Checks if the ipaddres and user has not voted before **/
 			Poll.findOneAndUpdate(
-				{ _id: req.body._id, "options._id" : req.body.vote._id, "voters.ipaddress": { $ne: ipaddress }, "voters.username": { $ne: req.body.username } },
+				{ _id: req.body._id, "options._id" : req.params.id, "voters.ipaddress": { $ne: ipaddress }, "voters.username": { $ne: req.body.username } },
 				{
 					$inc : { "options.$.count" : 1 },
 					$push:
@@ -264,8 +298,8 @@ module.exports = function (app, passport) {
 				},
 				{ new: true },
 				function(err, poll) {
+					console.log(poll);
 					if (err) throw err;
-					console.log('the poll now: ' + poll);
 					
 					if( poll === null )
 						res.status(200).json({submitted: false, message: "You already voted!"});
@@ -273,36 +307,85 @@ module.exports = function (app, passport) {
 						res.status(200).json({submitted: true, message: "Vote has been submitted."});
 				});
 			})
-			/** Adds an option to a poll if user is logged in **/
-			//TODO: Move to /api/poll/:id/option ? Allow removal of options by admin/creator?
+			/** Add or remove options from a poll **/
+			
+			//TODO: Verifiy that there are at least two options in the poll - Use .findById() and save in callback and .pre save verification in poll model
 			.post( function(req, res) {
+				if( req.isLoggedIn ) {
+					
+					/** Add new options to poll **/
+					var newOptions = createNewOptions(req.body.newOptions);
+					Poll.findByIdAndUpdate(req.params.id,
+						{
+							$push: { 'options': { $each: newOptions } }
+						},
+						{
+							new: true
+						},
+						function(err, poll) {
+							if( err ) {
+								res.status(200).json({message: "Error adding options!", error: err});
+								throw err;
+							}
+							if( poll !== null ) {
+								removePollOptions(req.params.id, req.body.removedOptions, false, res);
+							}
+							else {
+								removePollOptions(req.params.id, req.body.removedOptions, true, res);
+							}
+							
+					});
+				}
+				else
+					res.status(401).json({message: 'Not Permitted'});
+			})
+			/** Delete specific poll if user is the creator or an admin **/
+			//TODO: Add further verification to poll removal
+			.delete(requireAuth, function(req, res) {
+				
+				Poll.findById(req.params.id, function(err, poll) {
+					if( err )
+						throw err;
+					
+					if( req.username === poll.creator.name && poll !== null ) {
+						poll.remove();
+						res.status(200).json({message: "Successfully deleted poll", success: true});
+					}
+					else
+						res.status(200).json({message: "Failed to delete poll. Could not be found or not the creator.", success: false});
+				});
+			});
+			
+		/** Adds an option to a poll **/
+		//TODO: Only allow user to add once, check if option already exists before save
+		app.route('/api/poll/:id/:option')
+			.put( function(req, res) {
 				if( req.isLoggedIn ) {
 					Poll.findByIdAndUpdate(
 						req.params.id, 
 						{ $push: { "options": { vote: req.body.vote, count: 0 } } },
 						{ new: true },
 						function(err, poll) {
-							res.status(200).json(poll);
+							console.log(poll);
+							res.status(200).json({submitted: true, message: "Option Added!"})
 						});
 				}
 				else {
 					res.status(200).json({message: "Failed to add option. You must be logged in to add options."});
 				}
-			})
-			/** Delete specific poll if user is the creator or an admin **/
-			.delete( function(req, res) {
-				
 			});
 			
 		
 		app.route('/api/createpoll')
 			.post( function(req, res) {
-				//TODO: Do findOneAndUpdate on the chance a question is the same( to all lower )
+				//TODO: Do findOneAndUpdate on the chance a question is the same( to all lower ); Verify question and options
 				var createdPoll = new Poll({
 					question: req.body.question,
 					voters: [],
 					options: req.body.options,
-					creationDate: { unix: moment().unix(), human: moment().format("MMM DD, YYYY") }
+					creationDate: { unix: moment().unix(), human: moment().format("MMM DD, YYYY") },
+					live: req.body.draft,
+					secret: req.body.secret
 				});
 				
 				if ( req.username !== undefined ) {
@@ -372,4 +455,17 @@ module.exports = function (app, passport) {
 			});
 		});
 		
+		app.get('/api/deletepoll/:id', function(req, res) {
+			Poll.findOneAndRemove({ _id: req.params.id }, function(err, poll) {
+				if(err)
+					throw err;
+				res.status(200).redirect('../../');
+			});
+		});
+		
+		app.get('/api/testing', function(req, res) {
+			Poll.find({}, '-_id question' , function(err, poll) {
+				res.status(200).json(poll);
+			});
+		});
 };

@@ -1,0 +1,88 @@
+<script type="text/ng-template" id="group-template.html">
+    <div class="panel {{panelClass || 'panel-default'}}">
+      <div class="panel-heading" ng-click="toggleOpen(); isopen = !isopen;">
+        <h4 class="panel-title">
+          <a href tabindex="0" class="accordion-toggle" uib-accordion-transclude="heading">
+            <span uib-accordion-header ng-class="{'text-muted': isDisabled}">
+              {{heading}}
+              <i class="pull-right glyphicon" ng-class="{ 'glyphicon-chevron-down': isopen, 'glyphicon-chevron-right': !isopen }"></i>
+            </span>
+          </a>
+        </h4>
+      </div>
+      <div class="panel-collapse collapse" uib-collapse="!isOpen">
+        <div class="panel-body" style="text-align: right" ng-transclude></div>
+      </div>
+    </div>
+</script>
+
+    <uib-accordion close-others="oneAtATime">
+        <uib-accordion-group template-url="group-template.html" ng-repeat="poll in myPolls" heading="{{poll.question}}" ng-click="drawPoll(poll,'#chart-' + $index )">
+            <div class="row poll-information">
+    			<div class="poll-creator col-lg-4 col-md-4 col-sm-4 col-xs-4">
+    				<h4 class="pull-left">Created by You</h4>
+    			</div>
+    			<div class="poll-votes col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
+                    <h4>with {{poll.totalVotes}} Votes</h4>
+                </div>
+                <div class="poll-date col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                    <h4 class="pull-right">on {{poll.creationDate.human}}</h4>
+                </div>
+		    </div>
+            <div class="row">
+                <div class="col-lg-7 col-md-7 col-sm-7 col-xs-12 pull-left">
+                    <div class="chart" id="{{'chart-' + $index}}"></div>
+                </div> <!-- End left block -->
+                <div class="col-lg-5 col-md-5 col-sm-5 col-xs-12 pull-right">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+    					<div class="row">
+    						<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center">
+    							<h4>Results</h4>
+    						</div>
+    					</div>
+    					<div class="row row-centered">
+    						<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 col-centered" ng-repeat="option in poll.options">
+    							<b>{{option.vote}}: </b> <span>{{option.count}}</span>
+    						</div>
+    					</div>
+    					<div class="row">
+    					    <div id="option-managment">
+    					        <form name="optionManagement" ng-submit="makePollOptionChanges(poll)">
+    					            <div class="form-group">
+    					                <label for="pollOptions">Options</label>
+    					                <div class="input-group" ng-repeat="option in poll.options">
+    					                    <input text="text" class="form-control poll-option" value="{{option.vote}}" disabled>
+    					                    <span class="input-group-btn">
+                                                <button class="btn btn-secondary glyphicon btn-danger glyphicon-remove"
+                                                ng-click="removeOpt(option, poll, $index, true)"
+                                                type="button"></button>
+                                            </span>
+    					                </div>
+    					                <div class="input-group" ng-repeat="newOption in poll.newOptions">
+    					                    <input text="text" name="" 
+    					                    class="form-control poll-option"
+    					                    ng-minlength="1"
+    					                    placeholder="New Option"
+    					                    ng-model="newOption.optText">
+    					                    <span class="input-group-btn">
+                                                <button class="btn btn-secondary glyphicon"
+                                                ng-class="{'btn-danger glyphicon-remove': newOption.added, 'btn-success glyphicon-ok': !newOption.added}" 
+                                                ng-click="newOption.added ? removeOpt(newOption, poll, $index, false) : addOpt(poll, newOption, $index)"
+                                                type="button"></button>
+                                            </span>
+    					                </div>
+					                </div>
+    					            <button type="submit" class="btn btn-success">Change Poll</button>
+    					        </form>
+    					    </div>
+    					</div>
+    					<div class="row text-center" id="poll-manage">
+    					    <button type="submit" class="btn btn-danger" ng-click="deletePoll(poll)">Delete Poll</button>
+    					    <button type="submit" class="btn btn-default">Hide Poll</button>
+    					    <button type="submit" class="btn btn-default">Clear Votes</button>
+    					</div>
+				    </div> <!--End right block -->
+                </div>
+            </div>
+        </uib-accordion-group>
+    </uib-accordion>

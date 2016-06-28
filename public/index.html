@@ -7,28 +7,53 @@
 		<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
 		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css">
 		<link href="public/css/main.css" text="text/css" rel="stylesheet">
-		<link href="//netdna.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+		<link href="https://netdna.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
 	</head>
 
 	<header>
-		<div class="row">
-			<div class="col-lg-2 col-md-4 col-sm-6 col-xs-6 pull-left logo">
-				<h3><a href="#/">Voting App</a></h3>
+		<div class="row" id="account-bar">
+			<div class="col-lg-3 col-md-4 col-sm-4 col-xs-4 pull-left">
+				<ul id="logo-home">
+					<li id="site-name"><a href="#/">Ballot Box</a></li>
+					<li><a href="#/">Home</a></li>
+				</ul>
 			</div>
-			<!--Setup nav controller?-->
-			<div class="col-lg-3 col-md-5 col-sm-6 col-xs-6 pull-right navinfo" ng-controller="NavigationController as navCtrl" ng-init="setTabs()">
-				<nav>
-					<ul class="nav nav-tabs nav-justified"> <!-- Fix active classes -->
-						<li ng-repeat="tab in tabs" ng-cloak ng-class="{active: $index == 0}"><a ng-href={{tab.url}}>{{tab.name}}</a></li>
-					</ul>
-				</nav>
-			</div> <!-- End navinfo -->
-		</div> <!-- End header row -->
+			<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 pull-right" ng-controller="NavigationController as navCtrl">
+				<ul id="account-tabs">
+					<li ng-hide="loggedIn" ng-cloak><a href="#/login">Sign In</a></li>
+					<li ng-show="loggedIn" ng-cloak><a ng-href="{{'#/user/' +  username}}" ng-cloak>{{username}}</a></li>
+					<li ng-show="loggedIn" ng-cloak><a href="api/signout">Sign Out</a></li>
+				</ul>
+			</div>
+		</div>
 	</header>
 
 	<body>
 		<div class="container main">
-			<div ng-view></div> <!-- Angular Routing Area -->
+			<div class="row" id="main-display">
+				<div class="row" id="logo-display-row">
+					<div class="col-lg-3 col-lg-offset-1 col-md-4 col-md-offset-1 col-sm-4 col-sm-offset-1 col-xs-4 col-xs-offset-1 text-center" id="logo-display">
+						<img src="public/img/ballot-box-logo.png"></img>
+					</div>
+					<div class="col-lg-7 col-md-6 col-sm-6 col-xs-6" id="descript-display">
+						<h1>THE POLLS ARE OPEN!</h1>
+						<span>The time for voting is now. Submit your ballots or create your own ballot boxes for others to vote on today.</span>
+					</div>
+				</div>
+				<div class="row text-center" id="poll-nav-row">
+					<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 col-center" id="poll-nav-container" ng-controller="NavigationController as navCtrl">
+						<ul class="nav nav-tabs nav-justified" id="poll-nav">
+							<li role="presentation" ng-class="{ 'active': isActive('/') }" ng-cloak><a href="#/">All Polls</a></li>
+							<li role="presentation" ng-class="{ 'active': isActive('/user/polls') }" ng-show="loggedIn" ng-cloak><a href="#/user/polls">Your Polls</a></li>
+							<li role="presentation" ng-class="{ 'active': isActive('/new/poll') }" ng-show="loggedIn" ng-cloak><a href="#/new/poll">New Poll</a></li>
+							<li role="presentation" ng-class="{ 'active': isActive('/signup') }" ng-hide="loggedIn" ng-cloak><a href="#/signup">Sign Up</a></li>
+						</ul> 
+					</div>
+				</div>
+			</div>
+			<div class="row" id="view-container">
+				<div ng-view></div> <!-- Angular Routing Area -->
+			</div>
 		</div>
 		
 		<!-- Load JS libraries -->
@@ -46,16 +71,19 @@
 	  	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js" type="text/javascript"></script>
 	  
 	  	<!-- Controllers -->
-	  	<script src="controllers/homeController.js" type="text/javascript"></script>
+	  	<script src="controllers/allPollsController.js" type="text/javascript"></script>
 	  	<script src="controllers/pollController.js" type="text/javascript"></script>
 	  	<script src="controllers/loginController.js" type="text/javascript"></script>
 	  	<script src="controllers/signupController.js" type="text/javascript"></script>
 	  	<script src="controllers/navigationController.js" type="text/javascript"></script>
 	  	<script src="controllers/userController.js" type="text/javascript"></script>
+	  	<script src="controllers/userpollsController.js" type="text/javascript"></script>
+	  	<script src="controllers/pollCreationController.js" type="text/javascript"></script>
 	  	<!-- Services -->
 	  	<script src="services/userService.js" type="text/javascript"></script>
 	  	<script src="services/menuService.js" type="text/javascript"></script>
 	  	<script src="services/pollService.js" type="text/javascript"></script>
+	  	<script src="services/navService.js" type="text/javascript"></script>
 	  	
 	  	<script src="factories/chartFactory.js" type="text/javascript"></script>
 	</body>

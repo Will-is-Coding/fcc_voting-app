@@ -1,5 +1,8 @@
 'using strict';
 (function() {
+  /** TODO: FIX LEGEND CLICKING WHEN MULTIPLE CHARTS - ON HOME PAGE 
+            TRANSLATION ON X-AXIS TO STOP CUTTING OFF CHART ANY SIZE BUT COL-LG         
+  **/
     angular.module('VotingApp').factory('chartFactory', [ function() {
         var service = {};
         var id = 0;
@@ -16,12 +19,12 @@
           return false;
         };
         
-        var svgCreation = function(data, id) {
+        var svgCreation = function(data, id, widthRatio) {
             var width = $(id).width(), height = 400;
             var pieWidth = 360, pieHeight = 360;
-            var radius = Math.min(pieWidth, pieHeight) / 2;
+            var radius = Math.min(width, height) / 2;
           
-            var color = d3.scale.category20b();
+            var color = d3.scale.category20();
 
             var svg = d3.select(id)
               .append('svg')
@@ -30,7 +33,7 @@
               .attr('viewBox', '0 0 ' + width + ' ' + height)
               .attr('preserveAspectRatio', 'xMinYMin')
               .append('g')
-              .attr("transform", "translate(" + (width/2) + "," + (radius) +")");
+              .attr("transform", "translate(" + (width/2.5) + "," + (radius) +")");
             
             arc = d3.svg.arc()
                 .outerRadius(radius);
@@ -156,7 +159,7 @@
               .text(function(d) { return d; });
         };
         
-        service.createChart = function(options, id) {
+        service.createChart = function(options, id, widthRatio) {
           if(!hasVotes(options))
             var data = [{vote:"No Votes", count: 1}];
           else
@@ -164,7 +167,7 @@
           
           data.forEach(function(d) { d.enabled = true; });
           _data = data;
-          svgCreation(data, id);
+          svgCreation(data, id, widthRatio);
           
         };
         

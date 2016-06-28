@@ -1,9 +1,84 @@
-<div class="poll-area">
-	<div class="row poll-row" ng-repeat="poll in indexCtrl.polls">
-		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center">
-			<a ng-href="#/poll/{{poll._id}}">
-			<h3>{{poll.question}}</h3>
-			</a>
+<script type="text/ng-template" id="group-template.html">
+    <div class="panel {{panelClass || 'panel-default'}}">
+      <div class="panel-heading" ng-click="toggleOpen(); isopen = !isopen;">
+        <h4 class="panel-title">
+          <a href tabindex="0" class="accordion-toggle" uib-accordion-transclude="heading">
+            <span uib-accordion-header ng-class="{'text-muted': isDisabled}">
+              {{heading}}
+              <i class="pull-right glyphicon" ng-class="{ 'glyphicon-chevron-down': isopen, 'glyphicon-chevron-right': !isopen }"></i>
+            </span>
+          </a>
+        </h4>
+      </div>
+      <div class="panel-collapse collapse" uib-collapse="!isOpen">
+        <div class="panel-body" style="text-align: right" ng-transclude></div>
+      </div>
+    </div>
+</script>
+<uib-accordion close-others="oneAtATime">
+	<uib-accordion-group heading="{{poll.question}}" ng-repeat="poll in allPolls" ng-click="displayPoll(poll, '#chart-' + $index)" template-url="group-template.html">
+		<div class="row poll-information">
+			<div class="poll-creator col-lg-4 col-md-4 col-sm-4 col-xs-4">
+				<h4 class="pull-left">Created by {{poll.creator.name}}</h4>
+			</div>
+			<div class="poll-votes col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
+                <h4>with {{poll.totalVotes}} Votes</h4>
+            </div>
+            <div class="poll-date col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                <h4 class="pull-right">on {{poll.creationDate.human}}</h4>
+            </div>
 		</div>
-	</div>
-</div>
+		<div class="row">
+			<div class="col-lg-7 col-md-7 col-sm-7 col-xs-12 pull-left">
+				<div class="chart" id="{{'chart-' + $index}}"></div>
+			</div>
+			<div class="col-lg-5 col-md-5 col-sm-5 col-xs-12 pull-right">
+				<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+					<div class="row">
+						<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center">
+							<h4>Results</h4>
+						</div>
+					</div>
+					<div class="row row-centered">
+						<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 col-centered" ng-repeat="option in poll.options">
+							<b>{{option.vote}}: </b> <span>{{option.count}}</span>
+						</div>
+					</div>
+				</div>
+				<!-- TODO: Form verification with feedback -->
+				<form ng-submit="vote(poll.userVote.vote, poll._id)">
+					<div class="form-group">
+						<label for="voteOption" class="pull-left">Your Vote</label>
+						<select class="form-control" id="voteOption" name="voteOption" ng-model="poll.userVote" ng-options="option.vote for option in poll.options"></select>
+					</div>
+					<button type="submit" class="btn btn-primary">Vote</button>
+				</form>
+				<!-- TODO: Form verification with feedback -->
+				<form name="addOptForm" ng-submit="addOption(userNewOption, poll)" novalidate>
+					<div class="form-group has-feedback" ng-class="{ 'has-error' : (addOptForm.newOption.$error.minlength || addOptForm.newOption.$invalid) && !addOptForm.newOption.$pristine, 'has-success' : addOptForm.newOption.$valid && !addOptForm.newOption.$pristine}">
+						<label for="newOption" class="pull-left">New Option</label>
+						<input 
+						id="newOption" name="newOption" ng-model="userNewOption" 
+						class="form-control"
+						ng-class=""
+						placeholder="{{loggedIn === true ? 'Add an Option' : 'You Must Be Signed In'}}" 
+						ng-minlength="1" 
+						aria-describedby="" 
+						ng-disabled="{{loggedIn === false}}" 
+						required>
+						<span class="glyphicon form-control-feedback"
+						ng-class="{{(addOptForm.newOption.$error.minlength || addOptForm.newOption.$invalid) && !addOptForm.newOption.$pristine ? 'glyphicon-remove' : 'glyphicon-ok'}}" 
+						aria-hidden="true"></span>
+						<span id="inputSuccess2Status" class="sr-only">(success)</span>
+						<span ng-show="addOptForm.newOption.$invalid && !addOptForm.newOption.$pristine" class="help-block">You need to fill this in with an option.</p>
+						<span ng-show="addOptForm.newOption.$error.minlength" class="help-block">It must be at least 1 character long</p>
+					</div>
+					<button type="submit" class="btn btn-primary" ng-disabled="{{!loggedIn || addOptForm.$invalid}}">Add</button>
+				</form>
+			</div>
+		</div>
+		<div class="row">
+			<span class="pull-left">* Legend is clickable to remove options</span>
+		</div>
+	</uib-accordion-group>
+</uib-accordion>

@@ -1,8 +1,28 @@
 body {
-  overflow-x: none;
+  overflow-x: hidden;
+  background-color: #c7c7c7 !important;
 }
+
+.col-center {
+  float: none !important;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.row-centered {
+  text-align: center;
+}
+
+.col-centered {
+  display: inline-block;
+  float: none !important;
+  text-align: left;
+  margin-right: -4px; 
+}
+
+
 /** Header styles **/
-header {
+/*header {
 	margin-top: 10px;
 	border-bottom: #ddd 1px solid;
 	height: 50px;
@@ -10,17 +30,172 @@ header {
 
 header .logo {
 	height: 100%;
+}*/
+
+#account-bar {
+  background-color: #11204d;
+  height: 30px;
+}
+
+#site-name {
+  font-size: 22px;
+}
+
+header  ul {
+  list-style: none;
+}
+
+header ul > li {
+  display: inline-block;
+  float: left;
+  margin-left: 15px;
+  line-height: 30px;
+}
+
+#account-tabs > li > a {
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+
+/** Index Main Display **/
+#main-display {
+  height: 400px;
+  background-color: #0a6bc5;
+  padding-top: 50px;
+  position: relative;
+}
+
+#logo-display-row {
+  position: absolute;
+  top: 50;
+}
+
+#logo-display > img {
+  width: 240px;
+}
+
+#descript-display {
+  color: #fff;
+}
+
+#descript-display span {
+  font-size: 28px;
+}
+
+
+#poll-nav-row {
+  position: absolute;
+  bottom: 0;
+}
+
+#poll-nav {
+  z-index: 10;
+  margin-bottom: -1px;
+}
+
+#poll-nav > li {
+  border-bottom: 1px solid #fff;
+}
+
+#poll-nav > li > a {
+  background: #11204d;
+  font-size: 20px;
+}
+
+.nav-tabs.nav-justified>li>a {
+  border-bottom: 0px solid #fff !important;
+}
+
+.nav-tabs > li.active > a, .nav-tabs > li.active > a:focus, .nav-tabs > li.active > a:hover, .nav-tabs > li > a:hover {
+  border: 1px solid #fff !important;
+  border-bottom: 1px solid #06467F !important;
+  background-color: #06467F !important;
+  color: #fff !important;
+  margin-bottom: -1px !important;
+}
+
+
+/*Container for ng-view*/
+#view-container {
+  height:100%;
+  background-color: #fff;
+  border-top: 1px solid #fff;
+  z-index: 0;
 }
 
 /** Index Poll Area **/
 .poll-area {
-	background: #ddd;
-	height: 500px;
+	height: 100%;
 }
 
 .poll-row {
-	background: white;
-	margin: 5px 5px !important;
+	margin: 0px 0px !important;
+	background-color: #06467F;
+	padding-left: 10px;
+}
+
+.poll-row:hover {
+  /*background-color: #74ADE0;*/
+}
+
+.poll-row a {
+  color: #fff;
+}
+
+.poll-row a:hover {
+  color: #032A4D;
+  text-decoration: none;
+}
+
+.poll-chart-area {
+  height: 10px;
+  background-color: #06467F;
+}
+
+/* Accordion */
+.panel-group {
+  margin-bottom: 0px !important;
+}
+.panel-group .panel {
+  border-radius: 0px !important;
+}
+
+.panel-group .panel+.panel {
+  margin-top: 0px !important;
+}
+
+.panel {
+  border: 0px solid transparent !important;
+}
+.panel-default {
+  border-color: transparent !important;
+}
+
+.panel-group .panel-heading+.panel-collapse>.list-group, .panel-group .panel-heading+.panel-collapse>.panel-body {
+  border-top: 0px solid transparent !important;
+}
+
+.panel-heading {
+  background-color: #06467F !important;
+  border-radius: 0 0 !important;
+  border-bottom: 1px solid #fff !important;
+  cursor: pointer;
+}
+
+.panel-heading h4 > a {
+  font-size: 24px;
+  color: #fff;
+}
+
+.panel-body {
+  padding-top: 0px !important;
+}
+
+.poll-information {
+  background-color: #74ADE0;
+  margin-bottom: 5px;
 }
 
 /** Charts **/
@@ -80,7 +255,32 @@ rect.disabled {
   z-index: 9999;
 }
 
-/**User Page **/
+/** User's Polls **/
+#poll-manage {
+  margin-top: 20px;
+}
+
+/** New Poll **/
+#new-poll-header {
+  padding: 15px;
+}
+
+#new-poll {
+  padding-bottom: 15px;
+}
+
+/** Singe Poll **/
+#poll-question {
+  background-color: #06467f;
+  color: #fff;
+  line-height: 56px;
+}
+
+.single-poll-form {
+  text-align: right;
+}
+
+/**User Page DEPRECATED**/
 .user-main {
   height: 500px;
 }

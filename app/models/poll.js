@@ -1,5 +1,5 @@
 'use strict';
-
+//TODO: ADD VERIFCATION OF SAVING, UPDATING, AND REMOVING
 var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema;
@@ -30,7 +30,8 @@ var pollSchema = new Schema( {
         unix: String,
         human: String
     },
-    live: Boolean
+    live: Boolean,
+    secret: Boolean
 });
 
 // pollSchema.methods.userValidation = function() {} ?

@@ -1,31 +1,37 @@
 'use strict';
+/** Make A Provider? **/
 (function() {
-    angular.module("VotingApp").factory('userService', ['$http', function($http, menuService) {
-        var user = {};
-        var _username = '';
-        
-        user.requestName = function(callback) {
+    angular.module("VotingApp").service('userService', ['$http', function($http, menuService) {
+        var user = { username: '', admin: false, polls: [] };
+        var that = this;
+        this.requestUsername = function(callback) {
             $http({method: 'GET', url: '/api/authenticate'})
                 .then( function successCB(response) {
                     if ( response.data.username !== undefined ) {
-                        user.setName(response.data.username);
-                        callback();
+                        that.setUsername(response.data.username);
+                        console.log(response.data.username);
+                        callback( null, response.data.username );
                     }
                 }, function errorCB(error) {
-                    if (error)
+                    if (error) {
+                        callback(error, null);
                         throw error;
+                    }
                 });
         };
         
-        user.setName = function(username) {
-            _username = username;
+        this.setUsername = function(username) {
+            user.username = username;
         };
         
-        user.getName = function() {
-            return _username;
+        this.getUsername = function(callback) {
+            if( user.username === '' )
+                return this.requestUsername( callback );
+                
+            return user.username;
         };
         
-        user.getMyPolls = function(callback) {
+        this.getMyPolls = function(callback) {
             $http({ method: 'GET', url: '/api/user/polls'})
                 .then( function successCB(response) {
                     console.log(response);
@@ -37,7 +43,5 @@
                 });
         };
         
-        
-        return user;
     }]);
 })();

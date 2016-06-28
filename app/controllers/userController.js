@@ -50,11 +50,6 @@
                $scope.myPolls[i].displayPoll = false;
            }
        };
-       
-       $scope.drawPoll = function(poll, id) {
-           console.log(id + " > svg");
-           if( $(id + " > svg").length === 0 )
-                pollService.buildChart(poll.options, id);
-       };
+      
    }]); 
 })();

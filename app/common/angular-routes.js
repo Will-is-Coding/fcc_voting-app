@@ -3,15 +3,19 @@
     angular.module('VotingApp').config(function($routeProvider) {
         $routeProvider.when('/', {
             templateUrl: 'public/templates/pages/home/index.html',
-            controller: 'IndexController',
-            controllerAs: 'indexCtrl'
+            controller: 'AllPollsController',
         })
         
         .when('/poll/:id', {
-            templateUrl: 'public/templates/pages/poll/index.html',
+            templateUrl: 'public/templates/pages/poll/single.html',
             controller: 'PollController',
-            controllerAs: 'pollCtrl'
         })
+        
+        .when('/new/poll', {
+            templateUrl: 'public/templates/pages/poll/new.html',
+            controller: 'PollCreationController'
+        })
+        
         
         .when('/login', {
             templateUrl: 'public/templates/pages/login/index.html',
@@ -23,9 +27,9 @@
             controller: 'SignupController'
         })
         
-        .when('/user/:username', {
-            templateUrl: 'public/templates/pages/user/index.html',
-            controller: 'UserController'
+        .when('/user/polls', {
+            templateUrl: 'public/templates/pages/user/polls.html',
+            controller: 'UserPollsController'
         })
         
         .otherwise({ redirectTo: '/' });
