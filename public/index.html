@@ -21,6 +21,7 @@
 			<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 pull-right" ng-controller="NavigationController as navCtrl">
 				<ul id="account-tabs">
 					<li ng-hide="loggedIn" ng-cloak><a href="#/login">Sign In</a></li>
+					<li ng-hide="loggedIn" ng-cloak><a href="#/signup">Sign Up</a></li>
 					<li ng-show="loggedIn" ng-cloak><a ng-href="{{'#/user/' +  username}}" ng-cloak>{{username}}</a></li>
 					<li ng-show="loggedIn" ng-cloak><a href="api/signout">Sign Out</a></li>
 				</ul>
@@ -41,12 +42,13 @@
 					</div>
 				</div>
 				<div class="row text-center" id="poll-nav-row">
-					<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 col-center" id="poll-nav-container" ng-controller="NavigationController as navCtrl">
+					<!-- TODO: Fix display of tabs when xs -->
+					<div class="col-lg-6 col-md-7 col-sm-9 col-xs-10 col-center" id="poll-nav-container" ng-controller="NavigationController as navCtrl">
 						<ul class="nav nav-tabs nav-justified" id="poll-nav">
 							<li role="presentation" ng-class="{ 'active': isActive('/') }" ng-cloak><a href="#/">All Polls</a></li>
 							<li role="presentation" ng-class="{ 'active': isActive('/user/polls') }" ng-show="loggedIn" ng-cloak><a href="#/user/polls">Your Polls</a></li>
 							<li role="presentation" ng-class="{ 'active': isActive('/new/poll') }" ng-show="loggedIn" ng-cloak><a href="#/new/poll">New Poll</a></li>
-							<li role="presentation" ng-class="{ 'active': isActive('/signup') }" ng-hide="loggedIn" ng-cloak><a href="#/signup">Sign Up</a></li>
+							<li role="presentation" ng-class="{ 'active': isActive('/about') }" ng-cloak><a href="#/about">About</a></li>
 						</ul> 
 					</div>
 				</div>
@@ -81,7 +83,6 @@
 	  	<script src="controllers/pollCreationController.js" type="text/javascript"></script>
 	  	<!-- Services -->
 	  	<script src="services/userService.js" type="text/javascript"></script>
-	  	<script src="services/menuService.js" type="text/javascript"></script>
 	  	<script src="services/pollService.js" type="text/javascript"></script>
 	  	<script src="services/navService.js" type="text/javascript"></script>
 	  	

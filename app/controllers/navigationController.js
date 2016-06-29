@@ -1,27 +1,20 @@
 'use strict';
 (function() {
-    angular.module('VotingApp').controller('NavigationController', ['$scope', '$location', 'userService', function($scope, $location, userService) {
+    angular.module('VotingApp').controller('NavigationController', ['$scope', '$location', 'navService', function($scope, $location, navService) {
         $scope.loggedIn = false;
-        $scope.username = '';
+        $scope.username = navService.username;
         
-        var setUsername = function() {
-            userService.getUsername(function(err, username) {
-                if( err )
-                    console.log(err);
-                else {
-                    $scope.username = username;
-                    $scope.loggedIn = true;
-                }
-            });
+        var setUsername = function(error, username) {
+           if( error )
+                throw error;
+            else {
+                $scope.loggedIn = true;
+                $scope.username = username;
+            }
         };
-        setUsername();
-        
-        //menuService.setTabs();
-        //$scope.tabs = menuService.getTabs();
-        /*menuService.subscribe($scope, function tabsChanged() {
-            console.log('called back');
-            $scope.tabs = menuService.getTabs();
-        });*/
+        navService.subscribe($scope, setUsername);
+        navService.getUsername(setUsername);
+
         
         /** For the main navigation tabs, setting the correct tab with the class 'active' **/
         $scope.isActive = function(url) {

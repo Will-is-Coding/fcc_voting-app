@@ -4,17 +4,17 @@
     angular.module("VotingApp").service('userService', ['$http', function($http, menuService) {
         var user = { username: '', admin: false, polls: [] };
         var that = this;
-        this.requestUsername = function(callback) {
+        this.requestUsername = function( passUsername ) {
             $http({method: 'GET', url: '/api/authenticate'})
                 .then( function successCB(response) {
                     if ( response.data.username !== undefined ) {
                         that.setUsername(response.data.username);
                         console.log(response.data.username);
-                        callback( null, response.data.username );
+                        passUsername( null, response.data.username );
                     }
                 }, function errorCB(error) {
                     if (error) {
-                        callback(error, null);
+                        passUsername(error, null);
                         throw error;
                     }
                 });
@@ -24,11 +24,11 @@
             user.username = username;
         };
         
-        this.getUsername = function(callback) {
+        this.getUsername = function(passUsername) {
             if( user.username === '' )
-                return this.requestUsername( callback );
+                return this.requestUsername( passUsername );
                 
-            return user.username;
+            return passUsername( null, user.username );
         };
         
         this.getMyPolls = function(callback) {

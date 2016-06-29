@@ -18,7 +18,7 @@
         
         
         var checkUserStatus = function() {
-            if( userService.getUsername() === '' )
+            if( userService.getUsername(function() { console.log('allPolls wants username'); }) === '' )
                 $scope.loggedIn = false;
             else
                 $scope.loggedIn = true;

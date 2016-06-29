@@ -2,7 +2,17 @@
 (function() {
     angular.module('VotingApp').controller('UserPollsController', [ '$scope', 'userService', 'pollService', function($scope, userService, pollService) {
         $scope.myPolls = [];
-        $scope.username = userService.getUsername();
+        
+        var setUsername = function(error, username) {
+           if( error )
+                throw error;
+            else {
+                $scope.loggedIn = true;
+                $scope.username = username;
+            }
+        };
+        
+        userService.getUsername(setUsername);
         
         function _option() {
            this.added = false;
