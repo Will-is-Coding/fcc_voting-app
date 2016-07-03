@@ -15,7 +15,7 @@
       </div>
     </div>
 </script>
-
+<div class="row" ng-show="myPolls.length > 0">
     <uib-accordion close-others="oneAtATime">
         <uib-accordion-group template-url="group-template.html" ng-repeat="poll in myPolls" heading="{{poll.question}}" ng-click="drawPoll(poll,'#chart-' + $index )">
             <div class="row poll-information">
@@ -23,12 +23,12 @@
     				<h4 class="pull-left">Created by You</h4>
     			</div>
     			<div class="poll-votes col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
-                    <h4>with {{poll.totalVotes}} Votes</h4>
+                    <h4>with {{poll.totalVotes}} Vote(s)</h4>
                 </div>
                 <div class="poll-date col-lg-4 col-md-4 col-sm-4 col-xs-4">
                     <h4 class="pull-right">on {{poll.creationDate.human}}</h4>
                 </div>
-		    </div>
+    	    </div>
             <div class="row">
                 <div class="col-lg-7 col-md-7 col-sm-7 col-xs-12 pull-left">
                     <div class="chart" id="{{'chart-' + $index}}"></div>
@@ -63,7 +63,8 @@
     					                    class="form-control poll-option"
     					                    ng-minlength="1"
     					                    placeholder="New Option"
-    					                    ng-model="newOption.optText">
+    					                    ng-model="newOption.optText"
+    					                    ng-disabled="newOption.submittedSuccess">
     					                    <span class="input-group-btn">
                                                 <button class="btn btn-secondary glyphicon"
                                                 ng-class="{'btn-danger glyphicon-remove': newOption.added, 'btn-success glyphicon-ok': !newOption.added}" 
@@ -71,18 +72,44 @@
                                                 type="button"></button>
                                             </span>
     					                </div>
-					                </div>
+    				                </div>
     					            <button type="submit" class="btn btn-success">Change Poll</button>
+    					            <span class="help-block" ng-show="updateSuccess">{{message}}</span>
+    					            <span class="help-block" ng-show="!updateSuccess && message">{{message}}</span>
     					        </form>
     					    </div>
     					</div>
     					<div class="row text-center" id="poll-manage">
     					    <button type="submit" class="btn btn-danger" ng-click="deletePoll(poll)">Delete Poll</button>
-    					    <button type="submit" class="btn btn-default">Hide Poll</button>
-    					    <button type="submit" class="btn btn-default">Clear Votes</button>
+    					    <button type="submit" class="btn btn-default" disabled>Hide Poll</button>
+    					    <button type="submit" class="btn btn-default" disabled>Clear Votes</button>
     					</div>
-				    </div> <!--End right block -->
+    			    </div> <!--End right block -->
                 </div>
             </div>
+            <div class="row poll-legend-share">
+    			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+    				<span class="pull-left">* Legend is clickable to remove options</span>
+    			</div>
+    			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+    				<div class="input-group pull-right">
+    					<input id="poll-link" type="text" class="form-control" value="{{poll.url}}" select-on-click readonly>
+    					<span class="input-group-btn">
+    						<button class="btn btn-secondary btn-success" type="button" ngclipboard data-clipboard-text="{{poll.url}}">Share</button>
+    					</span>
+    				</div>
+    			</div>
+		    </div>
         </uib-accordion-group>
     </uib-accordion>
+</div>
+<div class="row" ng-show="myPolls.length === 0">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 page-heading">
+		<h3>Uh oh! You don't have any polls</h3>
+	</div>
+	<div class="col-lg-12 col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center" id="no-user-polls">
+	    <label>Click below to create your own</label>
+	    <br />
+	    <a href="#/new/poll"><button class="btn btn-primary">New Poll</button></a>
+	</div>
+</div>

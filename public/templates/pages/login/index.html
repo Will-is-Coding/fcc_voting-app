@@ -1,15 +1,40 @@
-<div class="login-wrapper well">
-	<form ng-submit="attemptLogin(user)" novalidate>
-		<h3>User: {{username}}</h3>
-		<div class="form-group">
-			<label for="usernameInput">Username</label>
-			<input type="text" class="form-control" id="usernameInput" placeholder="Username" ng-model="user.username">
-		</div>
-		<div class="form-group">
-			<label for="passwordInput">Password</label>
-			<input type="password" class="form-control" id="passwordInput" placeholder="Password" ng-model="user.password">
-		</div>
-		
-		<button type="submit" class="btn btn-default">Login</button>
-	</form>
+<div class="row">
+	<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 page-heading">
+		<h3>Get Signed In</h3>
+	</div>
+	<div class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12 sign-form-wrapper">
+		<form name="signInForm" ng-submit="attemptLogin(user)" novalidate>
+			<div class="form-group has-feedback"
+			ng-class="{'has-error': (signInForm.username.$invalid && signInForm.username.$dirty) || userError,
+			'has-success': signInForm.username.$valid && signInForm.username.$dirty && !userError }">
+				<label for="usernameInput">Username</label>
+				<input type="text" class="form-control" id="usernameInput" placeholder="Username" name="username" 
+				ng-model="user.username"
+				ng-minlength="4" 
+				ng-change="usernameEmpty()"
+				required="required">
+				<span class="help-block" ng-show="signInForm.username.$invalid && signInForm.username.$dirty">Must be at least 4 characters</span>
+				<span class="help-block" ng-show="userError">{{message}}</span>
+			</div>
+			<div class="form-group has-feedback"
+			ng-class="{'has-error': (signInForm.password.$invalid && signInForm.password.$dirty) || passwordError,
+			'has-success': signInForm.password.$valid && signInForm.password.$dirty && !passwordError}">
+				<label for="passwordInput">Password</label>
+				<input type="password" class="form-control" id="passwordInput" placeholder="Password" name="password"
+				ng-model="user.password" 
+				ng-minlength="4" 
+				ng-change="passwordEmpty()"
+				required="required">
+				<span class="help-block" ng-show="signInForm.password.$invalid && signInForm.password.$dirty">Must be at least 4 characters</span>
+				<span class="help-block" ng-show="passwordError">{{message}}</span>
+			</div>
+			
+			<button type="submit" class="btn btn-default" 
+			ng-class="{'btn-danger': (signInForm.username.$invalid) || userError || 
+			(signInForm.password.$invalid) || passowrdError,
+			'btn-success': signInForm.username.$valid && !userError && signInForm.password.$valid && !passwordError }"
+			ng-disabled="(signInForm.username.$invalid) || userError || 
+			(signInForm.password.$invalid) || passowrdError">Login</button>
+		</form>
+	</div>
 </div>

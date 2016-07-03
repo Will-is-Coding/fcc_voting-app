@@ -24,6 +24,8 @@
   "author": "Blake Johnston",
   "license": "MIT",
   "dependencies": {
+    "angular": "^1.5.7",
+    "angular-clipboard": "^1.4.2",
     "compression": "^1.6.1",
     "cookie": "^0.2.3",
     "cookie-parser": "^1.4.1",

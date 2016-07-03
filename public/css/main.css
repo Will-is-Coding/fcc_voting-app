@@ -21,27 +21,16 @@ body {
 }
 
 
-/** Header styles **/
-/*header {
-	margin-top: 10px;
-	border-bottom: #ddd 1px solid;
-	height: 50px;
-}
-
-header .logo {
-	height: 100%;
-}*/
-
 #account-bar {
   background-color: #11204d;
   height: 30px;
 }
 
 #site-name {
-  font-size: 22px;
+  font-size: 26px;
 }
 
-header  ul {
+header ul {
   list-style: none;
 }
 
@@ -56,6 +45,7 @@ header ul > li {
   color: #fff;
   text-decoration: none;
   cursor: pointer;
+  font-size: 18px;
 }
 
 
@@ -193,6 +183,18 @@ header ul > li {
   padding-top: 0px !important;
 }
 
+.fadein, .fadeout {
+  opacity: 0;
+  -moz-transition: opacity 0.4s ease-in-out;
+  -o-transition: opacity 0.4s ease-in-out;
+  -webkit-transition: opacity 0.4s ease-in-out;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.fadin {
+  opacity: 1;
+}
+
 .poll-information {
   background-color: #74ADE0;
   margin-bottom: 5px;
@@ -260,13 +262,40 @@ rect.disabled {
   margin-top: 20px;
 }
 
-/** New Poll **/
-#new-poll-header {
-  padding: 15px;
+#no-user-polls {
+  padding: 15px 0;
+}
+
+/******************
+    New Poll 
+*******************/
+#new-poll-title {
+  background-color: #06467f;
+  color: #fff;
+  height: 50px;
+  z-index: 0;
+}
+
+#new-poll-title > h3 {
+  line-height: 50px;
+  padding: 0 0;
+  margin: 0 0;
 }
 
 #new-poll {
+  padding-top: 15px;
   padding-bottom: 15px;
+  background-color: #fff;
+}
+
+#create-new-poll {
+  margin-top: 10px;
+  margin-bottom: 15px;
+  
+}
+
+#create-new-poll > button {
+  padding-left: 10px;
 }
 
 /** Singe Poll **/
@@ -278,6 +307,30 @@ rect.disabled {
 
 .single-poll-form {
   text-align: right;
+}
+
+.legend-share-info {
+  padding: 15px 0;
+}
+
+/******************
+     Sign Up
+******************/
+.page-heading {
+  background-color: #06467f;
+  color: #fff;
+  height: 50px;
+  z-index: 0;
+}
+
+.page-heading > h3 {
+  line-height: 50px;
+  padding: 0 0;
+  margin: 0 0;
+}
+
+.sign-form-wrapper {
+  padding: 15px 0;
 }
 
 /**User Page DEPRECATED**/

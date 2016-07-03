@@ -5,25 +5,31 @@
         $scope.secret= false;
         $scope.draft = false;
         $scope.created = false;
+        $scope.creationError = false;
+        $scope.creationMessage = "";
+        $scope.tempOptions = [];
         
         function _option() {
             this.added = false;
             this.optText = '';
+            this.unique = true;
         }
         
         $scope.options = [new _option(), new _option()];
         
-        var isUniqueOption = function(option) {
-            for( var i = 0; i < $scope.options.length; i++ ) {
-                if( $scope.options[i].optText.toLowerCase() === option.toLowerCase() && $scope.options[i].added )
-                    return false;
+        $scope.checkIfUnique = function(newOption) {
+            if( newOption.optText !== undefined ) {
+                if( $scope.options.findIndex( option => option.optText.toLowerCase() === newOption.optText.toLowerCase() && option.added && option.optText.length === newOption.optText.length ) !== -1 )
+                    newOption.unique = false;
+                else
+                    newOption.unique = true;
             }
-            
-            return true;
+            else
+                newOption.unique = true;
         };
        
         $scope.addOpt = function(option, index) {
-            if( option.optText.length > 0 && isUniqueOption(option.optText) ) {
+            if( option.optText.length > 0 && option.unique ) {
                 option.added = true;
                 if( index !== 0 )
                     $scope.options.push(new _option());
@@ -31,6 +37,7 @@
         };
         
         $scope.removeOpt = function(option, index) {
+            console.log('here');
             if(index !== -1 ) {
                 $scope.options.splice(index, 1);
                 if( $scope.options.length < 2 )
@@ -38,7 +45,20 @@
             }
         };
         
+        var checkOptionsValid = function() {
+            var amountAdded = 0;
+            for( var i = 0; i < $scope.options.length; i++ ) {
+                if( $scope.options[i].added )
+                    amountAdded++;
+            }
+            if( amountAdded > 1 )
+                return true;
+            else
+                return false;
+        };
+        
         var cleanOptions = function() {
+            $scope.tempOptions = $scope.options;
             for( var i = 0; i < $scope.options.length; i++ ) {
                 if( $scope.options[i].optText !== '' && $scope.options[i].optText.length > 0 && $scope.options[i].added )
                     $scope.options[i] = $scope.options[i].optText;
@@ -47,15 +67,36 @@
             }
         };
         
-        $scope.createPoll = function() {
-            cleanOptions();
-            if( $scope.poll.length > 0 && $scope.options.length > 1 ) {
-                pollService.createPoll($scope.poll, $scope.options, $scope.secret, $scope.draft);
-                $scope.options = [new _option()];
+        var handlePollCreation = function(err, response) {
+            if( err ) {
+                $scope.created = false;
+                $scope.message = "Error!";
+                console.log(err);
+                $scope.creationError = true;
+            }
+            else if( response.success ) {
                 $scope.created = true;
+                $scope.message = response.message;
+                $scope.options = [new _option(), new _option()];
+                $scope.poll = "";
+                $scope.newPollUrl = "https://fcc-voting-app-will-is-coding.c9users.io/#/poll/" + response.poll._id;
             }
             else {
-                console.log('Error!');
+                $scope.created = false;
+                $scope.creationError = true;
+                $scope.message = response.message;
+            }
+        };
+
+        $scope.createPoll = function() {
+            
+            if( $scope.poll.length > 0 && $scope.options.length > 1 && checkOptionsValid() ) {
+                cleanOptions();
+                pollService.createPoll($scope.poll, $scope.options, $scope.secret, $scope.draft, handlePollCreation);
+            }
+            else {
+                $scope.created = false;
+                $scope.message = "Your poll question is either not valid or you don't have two or more options added";
             }
         };
        

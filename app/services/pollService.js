@@ -43,17 +43,19 @@
             }
         };
         
-        this.updateOptions = function(newOptions, removedOptions, poll_id) {
+        this.updateOptions = function(newOptions, removedOptions, poll_id, handlePollEdition) {
             var updateInfo = { _id: poll_id, newOptions: newOptions, removedOptions: removedOptions };
             $http({method: 'POST', url: '/api/poll/' + poll_id, data: JSON.stringify(updateInfo)})
                 .then( function successCB(response) {
                     console.log(response);
+                    handlePollEdition(null, response.data);
                 }, function errorCB(error) {
+                    handlePollEdition(error, null);
                     throw error; 
                 });
         };
         
-        this.createPoll = function(question, optionData, secret, draft) {
+        this.createPoll = function(question, optionData, secret, draft, handlePollCreation) {
             createVotes(optionData);
             console.log(this.options);
             var newPoll = { question: question, options: this.options, secret: secret, draft: draft };
@@ -61,8 +63,9 @@
                 .then( function successCB(response) {
                     that.poll = response.data;
                     console.log(response);
+                    handlePollCreation(null, response.data);
                 },
-                function errorCB(error) { throw error; });
+                function errorCB(error) { handlePollCreation(error, null); throw error; });
         };
         
         this.fetchPoll = function(pollID, callback) {
@@ -73,25 +76,37 @@
                     callback(null, response.data);
                 }, function errorCB(error) {
                     if(error)
-                        console.log(error, null);
+                        console.log(error);
+                    callback(error, null);
                 });
         };
         
-        this.submitVote = function(userVote, pollID) {
-            var voteData = JSON.stringify({ _id: pollID, vote: userVote });
+        this.fetchAllPolls = function( handlePolls ) {
+            $http({ method: 'GET', url: '/api/fetchpolls'})
+                .then( function successCB(response) {
+                    handlePolls(null, response.data);
+                }, function errorCB(error) {
+                    handlePolls(error, null);
+                } );
+        };
+        
+        this.submitVote = function(userVote, pollID, optionID, handleResponse) {
+            var voteData = JSON.stringify({ _id: pollID, option_id: optionID, vote: userVote});
             console.log(voteData);
-            //Previous version used $routeParams.id
             $http({method: 'PUT', url: '/api/poll/' + pollID, data: voteData})
                 .then( function successCB(response) {
                     if( response.data.submitted === true )
                         chartFactory.addVote(userVote);
-                    else
-                        console.log(response.data.message);
-                    //callback(response.data.submitted, response.data.message);
+                        
+                    handleResponse(null, response.data);
+                        
+                    console.log(response.data);
                     
                 }, function errorCB(error) { 
-                    if(error) 
+                    if(error) {
+                        handleResponse(error, null);
                         throw error; 
+                    }
                 });
         };
         
@@ -119,4 +134,24 @@
         };
         
     }]);
+    
+    /** Written by Tamlyn on StackExchange **/
+    /** Allows one click to select the entire input text, but also allows repositioning of cursor to select section of it if desired **/
+    angular.module('VotingApp').directive('selectOnClick', function() {
+        return {
+            restrict: 'A',
+            link: function(scope, element) {
+                var focusedElement = null;
+                element.on('click', function() {
+                    if( focusedElement != this ) {
+                        this.select();
+                        focusedElement = this;
+                    }
+                });
+                element.on('blur', function() {
+                    focusedElement = null;
+                });
+            }
+        };
+    });
 })();

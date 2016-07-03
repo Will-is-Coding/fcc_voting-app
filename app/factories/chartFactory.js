@@ -181,7 +181,7 @@
         
         service.addVote = function(userVote) {
             for( var i = 0; i < _data.length; i++ ) {
-                if (_data[i].vote === userVote.vote) {
+                if (_data[i].vote === userVote) {
                     _data[i].count += 1;
                     path.data(pie(_data));
                     path.transition().duration(750).attrTween("d", arcTween);

@@ -1,5 +1,5 @@
 'use strict';
-//TODO: ADD VERIFCATION OF SAVING, UPDATING, AND REMOVING
+//TODO: ADD VERIFCATION OF SAVING, UPDATING, AND REMOVING; ONLY ONE OPTION TO ADD PER USER?
 var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema;
@@ -10,20 +10,15 @@ var voteSchema = new Schema( {
 });
 
 var voterSchema = new Schema( {
-    username: String,
-    ipaddress: String
+    username: String
 });
 
 var pollSchema = new Schema( {
     question: String,
     options: [voteSchema],
-    voters: [{
-        ipaddress: String,
-        username: String
-    }],
+    voters: [voterSchema],
     creator: {
         name: String,
-        authenticated: Boolean,
         ipaddress: String
     },
     creationDate: {

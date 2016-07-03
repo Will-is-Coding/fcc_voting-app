@@ -1,10 +1,8 @@
-<div id="single-main" class="container">
-    <div class="row" id="poll-question">
-        <div class="col-lg-12 col-md-12 col-sm-12 col-sm-12">
-            <h3>{{ poll.question }}</h3>
-        </div>
+<div id="single-main" class="row" >
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 page-heading">
+        <h3>{{ poll.question }}</h3>
     </div>
-    <div class="row poll-information">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 poll-information">
         <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
             <h4>Created By {{ poll.creator.name }}</h4>
         </div>
@@ -15,7 +13,7 @@
             <h4>On {{ poll.creationDate.human }}</h4>
         </div>
     </div>
-    <div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 		<div class="col-lg-7 col-md-7 col-sm-7 col-xs-12 pull-left">
 			<div class="chart" id="single-chart"></div>
 		</div>
@@ -32,13 +30,20 @@
 					</div>
 				</div>
 			</div>
-			<!-- TODO: Form verification with feedback -->
-			<form ng-submit="vote(poll.userVote.vote, poll._id)" class="single-poll-form">
-				<div class="form-group">
+			<form name="voteForm" ng-submit="vote(poll)" class="single-poll-form" novalidate>
+				<div class="form-group has-feedback"
+				ng-class="{'has-success': voteMessage.submitted && !voteMessage.error, 'has-error': !voteMessage.submitted && voteMessage.error }">
 					<label for="voteOption" class="pull-left">Your Vote</label>
-					<select class="form-control" id="voteOption" name="voteOption" ng-model="userVote" ng-options="option.vote for option in poll.options"></select>
+					<select class="form-control" id="voteOption" name="voteOption" 
+					ng-model="userVote" 
+					ng-disabled="poll.alreadyVoted" 
+					ng-options="option.vote for option in poll.options"></select>
+					<span class="help-block" ng-show="poll.alreadyVoted">You've already voted on this poll</span>
+					<span class="help-block" ng-show="voteMessage.submitted">{{voteMessage.message}}</span>
+					<span class="help-block" ng-show="!voteMessage.submitted && voteMessage.error">{{voteMessage.message}}</span>
+				
 				</div>
-				<button type="submit" class="btn btn-primary">Vote</button>
+				<button type="submit" class="btn btn-primary" ng-disabled="poll.alreadyVoted || voteMessage.submitted">Vote</button>
 			</form>
 			<!-- TODO: Form verification with feedback -->
 			<form name="addOptForm" ng-submit="addOption(userNewOption, poll)" class="single-poll-form" novalidate>
@@ -65,7 +70,17 @@
 			</form>
 		</div>
 	</div>
-	<div class="row" id="legend-information">
-	    <span>* Click the legend colors to disclude/include options</span>
+	<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 legend-share-info">
+	    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+			<span class="pull-left">* Legend is clickable to remove options</span>
+		</div>
+		<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+			<div class="input-group pull-right">
+				<input id="poll-link" type="text" class="form-control" value="{{poll.url}}" select-on-click readonly>
+				<span class="input-group-btn">
+					<button class="btn btn-secondary btn-success" type="button" ngclipboard data-clipboard-text="{{poll.url}}">Share</button>
+				</span>
+			</div>
+		</div>
 	</div>
 </div>

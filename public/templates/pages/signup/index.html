@@ -1,22 +1,46 @@
-<div class="signup-wrapper well">
-	<form ng-submit="attemptSignup(newUser)">
-		<div class="form-group">
-			<label for="usernameInput">Username</label>
-			<input type="text" class="form-control" id="usernameInput" placeholder="Username" ng-model="newUser.username">
-		</div>
-		<div class="form-group">
-			<label for="passwordInput">Password</label>
-			<input type="password" class="form-control" id="passwordInput" placeholder="Password" ng-model="newUser.password">
-		</div>
-		<div class="form-group">
-			<label for="confirmPasswordInput">Repeat Password</label>
-			<input type="password" class="form-control" id="confirmPasswordInput" placeholder="Repeat Password">
-		</div>
-		<div class="form-group">
-			<label for="emailInput">Email</label>
-			<input type="email" class="form-control" id="emailInput" placeholder="example@ex.com" ng-model="newUser.email">
-		</div>
-		
-		<button type="submit" class="btn btn-default">Sign Up</button>
-	</form>
+<div class="row">
+	<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 page-heading">
+		<h3>Sign Up Now</h3>
+	</div>
+	<div class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12 sign-form-wrapper">
+		<form name="signupForm" ng-submit="attemptSignup(newUser)" novalidate>
+			<div class="form-group has-feedback" ng-class="{ 'has-success': signupForm.username.$valid && signupForm.username.$dirty && !error, 'has-error': (signupForm.username.$invalid && signupForm.username.$dirty) || error }">
+				<label for="usernameInput">Username</label>
+				<input type="text" class="form-control" id="usernameInput" name="username" placeholder="Username" 
+				ng-model="newUser.username"  
+				ng-minlength="4" 
+				required="required">
+				<span class="help-block" ng-show="error">{{message}}</span>
+				<span class="help-block" ng-show="signupForm.username.$invalid && signupForm.username.$dirty">Username must be at least 4 characters</span>
+			</div>
+			<div class="form-group has-feedback" 
+			ng-class="{ 'has-success': signupForm.password.$valid && signupForm.password.$dirty && !passwordError,
+						'has-error': (signupForm.password.$invalid && signupForm.password.$dirty) || passwordError }">
+				<label for="passwordInput">Password</label>
+				<input type="password" class="form-control" id="passwordInput" name="password" placeholder="Password"
+				ng-model="newUser.password"
+				ng-change="checkPasswords()" 
+				ng-minlength="4"
+				required="required">
+				<span class="help-block" ng-show="signupForm.password.$error.minlength">Password must be at least 4 characters</span>
+				<span class="help-block" ng-show="passwordError">Password and its repeat must match</span>
+			</div>
+			<div class="form-group has-feedback" 
+			ng-class="{ 'has-success': signupForm.passwordRepeat.$valid && signupForm.passwordRepeat.$dirty && !passwordError,
+						'has-error': (signupForm.passwordRrepeat.$invalid && signupForm.passwordRepeat.$dirty) || passwordError }">
+				<label for="confirmPasswordInput">Repeat Password</label>
+				<input type="password" class="form-control" id="confirmPasswordInput" name="passwordRepeat"
+				ng-model="passwordRepeat" placeholder="Repeat Password" 
+				ng-change="checkPasswords()" 
+				ng-minlength="4" 
+				required="required">
+				<span class="help-block" ng-show="passwordError">Password and its repeat must match</span>
+			</div>
+			<div class="form-group has-feedback">
+				<label for="emailInput">Email (Optional)</label>
+				<input type="email" class="form-control" id="emailInput" name="email" placeholder="example@ex.com" ng-model="newUser.email">
+			</div>
+			<button type="submit" class="btn" ng-class="{ 'btn-success': (signupForm.$valid || (!passwordError && signupForm.$valid)) && !error, 'btn-danger': signupForm.$invalid || passwordError || error }" ng-disabled="signupForm.$invalid || passwordErro || errorr">Sign Up</button>
+		</form>
+	</div>
 </div>
