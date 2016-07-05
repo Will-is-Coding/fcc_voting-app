@@ -1,4 +1,7 @@
 'use strict';
+/** TODO: FIX VALIDATION ON FORM; ALLOW CREATING ANOTHER POLL WHEN CLICKING 'NEW POLL' **/
+/** ERR: CURRENTLY FAILING TO ADD CORRECTLY, NEXT NEW POLL COMBINES WITH LAST ONE **/
+/** ERR: IF POLL EXISTS DOES NOT RETURN CORRECTLY NOR RESET OPTIONS CORRECTLY **/
 ( function() {
     angular.module('VotingApp').controller('PollCreationController', ['$scope', '$http', 'pollService', function($scope, $http, pollService) {
         $scope.poll = '';
@@ -85,6 +88,8 @@
                 $scope.created = false;
                 $scope.creationError = true;
                 $scope.message = response.message;
+                $scope.pollError = response.poll;
+                $scope.optionsError = response.options;
             }
         };
 
@@ -98,6 +103,16 @@
                 $scope.created = false;
                 $scope.message = "Your poll question is either not valid or you don't have two or more options added";
             }
+        };
+        
+        $scope.restartNewPoll = function() {
+            $scope.created = false;
+            $scope.poll = '';
+            $scope.options = [new _option(), new _option()];
+            $scope.creationError = false;
+            $scope.pollError = false;
+            $scope.optionsError = false;
+            $scope.creationMessage = "";
         };
        
     }]);

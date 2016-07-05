@@ -8,10 +8,13 @@
         $scope.userNewOption = "";
         $scope.voteMessages = [];
         var tempPollIndex = null;
-        var tempOptIndex = null;
-        //$scope.userVote = '';
+        var addedVote = "";
+
         var chartWidthRatio = 3;
         
+        var pollLegendControl = {};
+        
+        //Get ipaddress and check?
         var setupPolls = function() {
             for( var i = 0; i < $scope.allPolls.length; i++ ) {
                 $scope.allPolls[i].totalVotes = pollService.totalVotes($scope.allPolls[i]);
@@ -20,7 +23,7 @@
                 $scope.allPolls[i].url = 'https://fcc-voting-app-will-is-coding.c9users.io/#/poll/' + $scope.allPolls[i]._id;
                 $scope.allPolls[i].submitted = false;
                 
-                $scope.allPolls[i].voteMessage = { submitted: false, message: "", error: false }
+                $scope.allPolls[i].voteMessage = { submitted: false, message: "", error: false };
                 
                 var hasVoted = $scope.allPolls[i].voters.findIndex( voter => voter.username === $scope.username );
                 if ( hasVoted !== -1 ) {
@@ -31,7 +34,7 @@
                 }
             }
         };
-        
+    
         
         function checkUserStatus(error, username) {
             if(error)
@@ -62,22 +65,57 @@
             }*/
         };
         
-        $scope.displayPoll = function(poll, id) {
+        pollLegendControl.legendEnabling = function(legend, pie, path, arc) {
+            var data = pollLegendControl.poll.options;
+            legend.on('click', function(vote) {
+                  var rect = d3.select(this);
+                  var enabled = true;
+                  var totalEnabled = d3.sum(data.map(function(d) {
+                    return (d.enabled && d.count > 0) ? 1 : 0;
+                  }));
+                  
+                  if (rect.attr('class') === 'disabled') {
+                    rect.attr('class', '');
+                  } else {
+                    if (totalEnabled < 2) return;
+                    rect.attr('class', 'disabled');
+                    enabled = false;
+                  }
+                  
+                  pie.value(function(d) { 
+                    if (d.vote === vote) d.enabled = enabled;
+                    return (d.enabled) ? d.count : 0;
+                  });
+                  
+                  path = path.data(pie(data));
+                  
+                  path.transition()
+                    .duration(750)
+                    .attrTween('d', function(d) {
+                      var interpolate = d3.interpolate(this._current, d);
+                      this._current = interpolate(0);
+                      return function(t) {
+                        return arc(interpolate(t));
+                      };
+                    });
+                });
+        };
+        
+        $scope.displayPoll = function(poll, id, index) {
             var pollData = poll.options;
             poll.displaying = !poll.displaying;
             
-            if( $(id + " > svg").length === 0 )
-                pollService.buildChart(pollData, id, chartWidthRatio);
-                
-            
+            if( $(id + " > svg").length === 0 ) {
+                pollLegendControl.poll = poll;
+                pollService.buildChart(pollData, id, chartWidthRatio, pollLegendControl.legendEnabling);
+            }
         };
         
         var handleVoteResponse = function(error, response) {
             if ( response && !error ) {
                 $scope.allPolls[tempPollIndex].voteMessage = response;
                 if( response.submitted ) {
-                    //$scope.allPolls[tempPollIndex].options[tempOptIndex].count++;
-                    //update Poll's chart
+
                 }
                 else {
                     $scope.allPolls[tempPollIndex].voteMessage.error = true;
@@ -94,8 +132,7 @@
             console.log(poll.userVote);
             tempPollIndex = index;
             
-            tempOptIndex = poll.options.findIndex( option => option._id === poll.userVote._id );
-            pollService.submitVote(poll.userVote.vote, poll._id, poll.userVote._id, handleVoteResponse);
+            pollService.submitVote(poll.userVote.vote, poll, poll.userVote._id, "#chart-" + index, handleVoteResponse);
         };
         
         
@@ -111,12 +148,27 @@
                 newOpt.unique = true;
         };
         
-        $scope.addOption = function(newOpt, poll) {
-            pollService.addOption(newOpt, poll);
+        var handleAddOptionResponse = function(error, response) {
+            if( error ) {
+                $scope.allPolls[tempPollIndex].addError = true;
+                throw error;
+            }
+            
+            if( response.submitted ) {
+                $scope.allPolls[tempPollIndex].addError = false;
+                $scope.allPolls[tempPollIndex].options.push({vote: addedVote, count: 0});
+            }
+            else {
+                $scope.addError = true;
+            }
+            
+            $scope.addMessage = response.message;
         };
         
-        $scope.selectLink = function($event) {
-            $event.target.select();
+        $scope.addOption = function(newOpt, poll, pollIndex) {
+            addedVote = newOpt;
+            tempPollIndex = pollIndex;
+            pollService.addOption(newOpt, poll, handleAddOptionResponse);
         };
         
     }]);

@@ -11,6 +11,13 @@
             this.count = 0;
         }
         
+        var setupPolls = function(polls) {
+            for( var i = 0; i < polls.length; i++ ) {
+                polls[i].totalVotes = that.totalVotes(polls[i]);
+               // polls[i].chartLegend =
+            }
+        };
+        
         
         //TODO: Use Regex or something to only add votes without only spaces and longer than one character
         function createVotes(optionData) {
@@ -30,16 +37,20 @@
             return true;
         };
         
-        this.addOption = function(option, poll) {
+        this.addOption = function(option, poll, handleAddOptionResponse) {
             if( this.isUniqueOption(option, poll) ) {
                 var newOption = { vote: option, count: 0 };
-                console.log('/api/poll/' + poll._id + '/' + option);
+
                 $http({method: 'PUT', url: '/api/poll/' + poll._id + '/' + option, data: JSON.stringify(newOption)})
                     .then( function successCB(response) {
                         console.log(response.data.message);
+                        handleAddOptionResponse(null, response.data);
                     }, function errorCB(error) {
-                        
+                        handleAddOptionResponse(error, null);
                     });
+            }
+            else {
+                handleAddOptionResponse(null, {message: "Option already available", submitted: false});
             }
         };
         
@@ -84,19 +95,22 @@
         this.fetchAllPolls = function( handlePolls ) {
             $http({ method: 'GET', url: '/api/fetchpolls'})
                 .then( function successCB(response) {
+                    setupPolls(response.data);
                     handlePolls(null, response.data);
                 }, function errorCB(error) {
                     handlePolls(error, null);
                 } );
         };
         
-        this.submitVote = function(userVote, pollID, optionID, handleResponse) {
-            var voteData = JSON.stringify({ _id: pollID, option_id: optionID, vote: userVote});
+        this.submitVote = function(userVote, poll, optionID, chartID, handleResponse) {
+            var voteData = JSON.stringify({ _id: poll._id, option_id: optionID, vote: userVote});
             console.log(voteData);
-            $http({method: 'PUT', url: '/api/poll/' + pollID, data: voteData})
+            
+            $http({method: 'PUT', url: '/api/poll/' + poll._id, data: voteData})
                 .then( function successCB(response) {
-                    if( response.data.submitted === true )
-                        chartFactory.addVote(userVote);
+                    if( response.data.submitted === true ) {
+                        chartFactory.addVote(userVote, poll.options, chartID);
+                    }
                         
                     handleResponse(null, response.data);
                         
@@ -110,8 +124,8 @@
                 });
         };
         
-        this.buildChart = function(options, id, widthRatio) {
-           chartFactory.createChart(options, id, widthRatio);  
+        this.buildChart = function(options, id, widthRatio, pollsLegendHandling) {
+           chartFactory.createChart(options, id, widthRatio, pollsLegendHandling);  
         };
         
         this.totalVotes = function(poll) {
@@ -120,6 +134,10 @@
                 count += poll.options[i].count;
             }
             return count;
+        };
+        
+        this.clickLegend = function(legend, data) {
+            chartFactory.clickLegend(legend, data);    
         };
         
         this.deletePoll = function(pollID) {

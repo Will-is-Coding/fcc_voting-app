@@ -11,6 +11,7 @@ var Voted = new Schema({
 
 var User = new Schema({
     username: String,
+    username_lower: String,
     password: String,
     email: String,
     ipaddress: String,

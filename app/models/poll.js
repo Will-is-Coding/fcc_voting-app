@@ -6,15 +6,19 @@ var Schema = mongoose.Schema;
 
 var voteSchema = new Schema( {
    vote: String,
-   count: Number
+   count: Number,
+   addedBy: String
 });
 
 var voterSchema = new Schema( {
-    username: String
+    username: String,
+    ipaddress: String,
+    votedFor_id: String
 });
 
 var pollSchema = new Schema( {
     question: String,
+    question_lower: String,
     options: [voteSchema],
     voters: [voterSchema],
     creator: {

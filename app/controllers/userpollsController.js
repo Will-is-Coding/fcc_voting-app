@@ -5,6 +5,7 @@
         $scope.updateSuccess = false;
         $scope.message = null;
         var tempPoll = null;
+        var pollLegendControl = {};
         
         var setUsername = function(error, username) {
            if( error )
@@ -52,11 +53,48 @@
         };
         
         getMyPolls();
+        
+        pollLegendControl.legendEnabling = function(legend, pie, path, arc) {
+            var data = pollLegendControl.poll.options;
+            legend.on('click', function(vote) {
+              var rect = d3.select(this);
+              var enabled = true;
+              var totalEnabled = d3.sum(data.map(function(d) {
+                return (d.enabled && d.count > 0) ? 1 : 0;
+              }));
+              
+              if (rect.attr('class') === 'disabled') {
+                rect.attr('class', '');
+              } else {
+                if (totalEnabled < 2) return;
+                rect.attr('class', 'disabled');
+                enabled = false;
+              }
+              
+              pie.value(function(d) { 
+                if (d.vote === vote) d.enabled = enabled;
+                return (d.enabled) ? d.count : 0;
+              });
+              
+              path = path.data(pie(data));
+              
+              path.transition()
+                .duration(750)
+                .attrTween('d', function(d) {
+                  var interpolate = d3.interpolate(this._current, d);
+                  this._current = interpolate(0);
+                  return function(t) {
+                    return arc(interpolate(t));
+                  };
+                });
+            });
+        };
        
         $scope.drawPoll = function(poll, id) {
-            console.log(id + " > svg");
-            if( $(id + " > svg").length === 0 )
-                pollService.buildChart(poll.options, id);
+            if( $(id + " > svg").length === 0 ) {
+                pollLegendControl.poll = poll;
+                pollService.buildChart(poll.options, id, 3, pollLegendControl.legendEnabling);
+            }
         };
        
        

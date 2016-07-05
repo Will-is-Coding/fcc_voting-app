@@ -218,6 +218,10 @@ rect.disabled {
   fill: transparent !important;
 }
 
+.disabled > rect {
+  fill: transparent !important;
+}
+
 .svg-container {
   display: inline-block;
   position: relative;

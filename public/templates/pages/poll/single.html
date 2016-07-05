@@ -47,7 +47,7 @@
 			</form>
 			<!-- TODO: Form verification with feedback -->
 			<form name="addOptForm" ng-submit="addOption(userNewOption, poll)" class="single-poll-form" novalidate>
-				<div class="form-group has-feedback" ng-class="{ 'has-error' : (addOptForm.newOption.$error.minlength || addOptForm.newOption.$invalid) && !addOptForm.newOption.$pristine, 'has-success' : addOptForm.newOption.$valid && !addOptForm.newOption.$pristine}">
+				<div class="form-group has-feedback" ng-class="{ 'has-error' : (addOptForm.newOption.$error.minlength || addOptForm.newOption.$invalid) && !addOptForm.newOption.$pristine || addError, 'has-success' : addOptForm.newOption.$valid && !addOptForm.newOption.$pristine && !addError}">
 					<label for="newOption" class="pull-left">New Option</label>
 					<input 
 					id="newOption" name="newOption" ng-model="userNewOption" 
@@ -62,9 +62,10 @@
 					ng-class="{{(addOptForm.newOption.$error.minlength || addOptForm.newOption.$invalid) && !addOptForm.newOption.$pristine ? 'glyphicon-remove' : 'glyphicon-ok'}}" 
 					aria-hidden="true"></span>
 					<span id="inputSuccess2Status" class="sr-only">(success)</span>
-					<span ng-hide="true" class="help-block">You've already submitted an option to this poll</span>
-					<span ng-hide="true" class="help-block">This option is already available</span>
+					<span ng-show="addError" class="help-block">{{addMessage}}</span>
+					<span ng-show="!addError" class="help-block">{{addMessage}}</span>
 					<span ng-show="addOptForm.newOption.$invalid && addOptForm.newOption.$dirty" class="help-block">It must be at least 1 character long</p>
+					
 				</div>
 				<button type="submit" class="btn btn-primary pull-right" ng-disabled="{{!loggedIn || addOptForm.$invalid}}">Add</button>
 			</form>

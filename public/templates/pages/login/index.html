@@ -10,14 +10,13 @@
 				<label for="usernameInput">Username</label>
 				<input type="text" class="form-control" id="usernameInput" placeholder="Username" name="username" 
 				ng-model="user.username"
-				ng-minlength="4" 
-				ng-change="usernameEmpty()"
+				ng-change="usernameEmpty(); validateUsername()"
 				required="required">
-				<span class="help-block" ng-show="signInForm.username.$invalid && signInForm.username.$dirty">Must be at least 4 characters</span>
+				<span class="help-block" ng-show="signInForm.username.$error.required && signInForm.username.$dirty">Required</span>
 				<span class="help-block" ng-show="userError">{{message}}</span>
 			</div>
 			<div class="form-group has-feedback"
-			ng-class="{'has-error': (signInForm.password.$invalid && signInForm.password.$dirty) || passwordError,
+			ng-class="{'has-error': ((signInForm.password.$error.minlength || signInForm.password.$error.required) && signInForm.password.$dirty) || passwordError,
 			'has-success': signInForm.password.$valid && signInForm.password.$dirty && !passwordError}">
 				<label for="passwordInput">Password</label>
 				<input type="password" class="form-control" id="passwordInput" placeholder="Password" name="password"
@@ -25,7 +24,8 @@
 				ng-minlength="4" 
 				ng-change="passwordEmpty()"
 				required="required">
-				<span class="help-block" ng-show="signInForm.password.$invalid && signInForm.password.$dirty">Must be at least 4 characters</span>
+				<span class="help-block" ng-show="signInForm.password.$error.minlength && signInForm.password.$dirty">Must be at least 4 characters</span>
+				<span class="help-block" ng-show="signInForm.password.$error.required && signInForm.password.$dirty">Required</span>
 				<span class="help-block" ng-show="passwordError">{{message}}</span>
 			</div>
 			

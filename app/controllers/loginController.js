@@ -4,16 +4,30 @@
     angular.module('VotingApp').controller('LoginController', [ '$http', '$scope', '$location', 'userService', 'navService', function($http, $scope, $location, userService, navService) {
         $scope.message = "";
         $scope.userError = false;
+        $scope.userErrorMessage = "";
         $scope.passwordError = false;
         
-        $scope.usernameEmpty = function() {
-            if( $scope.user.username === undefined && $scope.userError )
-                $scope.userError = false;
-        };
         
         $scope.passwordEmpty = function() {
             if( $scope.user.password === undefined && $scope.passwordError )
                 $scope.passwordError = false;
+        };
+        
+        $scope.validateUsername = function() {
+            var validUsernameRegEx = /(?=.{4,15}$)^[a-zA-Z\-\_]+$/;
+
+            if( $scope.user.username !== undefined ) {
+                if( validUsernameRegEx.exec($scope.user.username) === null ) {
+                    $scope.userError = true;
+                    $scope.message = "Must be 4-15 characters. No digits. Underscores, periods, and dashes allowed";
+                }
+                else {
+                    $scope.userError = false;
+                }
+            }
+            else if( !$scope.user.username && $scope.userError === true ) {
+                $scope.userError = false;
+            }
         };
         
         //TODO: Move to userService?
