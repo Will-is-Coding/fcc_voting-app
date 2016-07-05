@@ -62,7 +62,7 @@
 						<button type="submit" class="btn btn-primary" ng-disabled="poll.alreadyVoted || poll.voteMessage.submitted">Vote</button>
 					</form>
 
-					<form name="addOptForm" ng-submit="addOption(userNewOption.text, poll)" novalidate>
+					<form name="addOptForm" ng-submit="addOption(userNewOption.text, poll, $index)" novalidate>
 						<div class="form-group has-feedback"
 						ng-class="{ 'has-error' : (addOptForm.newOption.$invalid && !addOptForm.newOption.$pristine) || !userNewOption.unique, 
 						'has-success' : addOptForm.newOption.$valid && addOptForm.newOption.$dirty && userNewOption.unique }">

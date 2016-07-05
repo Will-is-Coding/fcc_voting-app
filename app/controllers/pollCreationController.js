@@ -21,7 +21,7 @@
         $scope.options = [new _option(), new _option()];
         
         $scope.checkIfUnique = function(newOption) {
-            if( newOption.optText !== undefined ) {
+            if( newOption.optText !== undefined || newOption.optText !== '' ) {
                 if( $scope.options.findIndex( option => option.optText.toLowerCase() === newOption.optText.toLowerCase() && option.added && option.optText.length === newOption.optText.length ) !== -1 )
                     newOption.unique = false;
                 else
@@ -97,6 +97,8 @@
             
             if( $scope.poll.length > 0 && $scope.options.length > 1 && checkOptionsValid() ) {
                 cleanOptions();
+                console.log($scope.options);
+                console.log($scope.poll);
                 pollService.createPoll($scope.poll, $scope.options, $scope.secret, $scope.draft, handlePollCreation);
             }
             else {
@@ -107,12 +109,6 @@
         
         $scope.restartNewPoll = function() {
             $scope.created = false;
-            $scope.poll = '';
-            $scope.options = [new _option(), new _option()];
-            $scope.creationError = false;
-            $scope.pollError = false;
-            $scope.optionsError = false;
-            $scope.creationMessage = "";
         };
        
     }]);

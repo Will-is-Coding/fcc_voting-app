@@ -21,6 +21,7 @@
         
         //TODO: Use Regex or something to only add votes without only spaces and longer than one character
         function createVotes(optionData) {
+            that.options = [];
             for( var i = 0; i < optionData.length; i++ ) {
                  if(optionData[i].length > 0) {
                      var newOpt = new option(optionData[i]);

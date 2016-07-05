@@ -231,6 +231,8 @@
         };
         
         function arcTween(a) {
+          console.log(this._current);
+          console.log(a);
             var i = d3.interpolate(this._current, a);
             this._current = i(0);
             return function(t) {
@@ -240,7 +242,7 @@
         
 
         chart.addVote = function(userVote, data, chartID) {
-
+            //Set the correct SVG and path element, both necessary for update
             svg = d3.select(chartID + " g");
             path = svg.selectAll('path')
 
@@ -251,14 +253,32 @@
             }
             
             for( var i = 0; i < data.length; i++ ) {
+                color(data[i].vote);
                 if (data[i].vote === userVote) {
+                  if( !hasVotes(data) ) {
+                    data[i].count += 1;
+                    path.data(pie([data[i]]));
+                  }
+                  else {
                     data[i].count += 1;
                     path.data(pie(data));
-                    path.transition().duration(750).attrTween("d", arcTween);
-                    
+                  }
                 }
-                color(data[i].vote);
             }
+            
+            path.transition()
+              .duration(750)
+              .attr("fill", function(d) {
+
+                return color(d.data.vote);
+              })
+              .attrTween('d', function(d) {
+                var interpolate = d3.interpolate(this._current, d);
+                this._current = interpolate(0);
+                return function(t) {
+                  return arc(interpolate(t));
+                };
+              });
 
             legend = svg.selectAll('.legend')
                 .data(color.domain())
@@ -273,7 +293,6 @@
                   return 'translate(' + horz + ',' + vert +')';
               });
 
-            console.log(legend.data());
               legend.append('rect')
                 .attr('width', legendRectSize)
                 .attr('height', legendRectSize)

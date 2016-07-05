@@ -22,6 +22,7 @@
                 $scope.allPolls[i].userVote = $scope.allPolls[i].options[0];
                 $scope.allPolls[i].url = 'https://fcc-voting-app-will-is-coding.c9users.io/#/poll/' + $scope.allPolls[i]._id;
                 $scope.allPolls[i].submitted = false;
+                $scope.allPolls[i].addError = false;
                 
                 $scope.allPolls[i].voteMessage = { submitted: false, message: "", error: false };
                 
