@@ -31,17 +31,7 @@
             return passUsername( null, user.username );
         };
         
-        this.getMyPolls = function(callback) {
-            $http({ method: 'GET', url: '/api/user/polls'})
-                .then( function successCB(response) {
-                    console.log(response);
-                    callback(response.data);
-                    
-                }, function errorCB(error) {
-                    if (error)
-                        throw error;
-                });
-        };
+        
         
     }]);
 })();

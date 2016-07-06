@@ -70,7 +70,7 @@ module.exports = function (app, passport) {
 			options = options.filter(function(item, i, ar){ return ar.indexOf(item) === i; }); //Make sure unique options
 			if( options.length > 1) {
 				for( var i = 0; i < options.length; i++ ) {
-					if( options[i] && validStringRegEx.exec(options[i]) !== null) {
+					if( options[i] && validStringRegEx.exec(options[i]) !== null ) {
 						validOptions = true;
 					}
 					else
@@ -265,8 +265,8 @@ module.exports = function (app, passport) {
 		toCreate = toCreate.filter( function(item, i, ar ) { return ar.indexOf(item) === i; }); //Make sure there are no repeats
 		console.log(toCreate);
 		for( var i = 0; i < toCreate.length; i++ ) {
-			if( toCreate[i].optText !== undefined && toCreate[i].optText.length > 0)
-				newOptions.push({ count: 0, vote: toCreate[i].optText });
+			if( toCreate[i] !== undefined && toCreate[i].length > 0)
+				newOptions.push({ count: 0, vote: toCreate[i] });
 		}
 		return newOptions;
 	};
@@ -344,7 +344,7 @@ module.exports = function (app, passport) {
 			}
 		})
 			
-		/** Add or remove options from a poll as the creator **/
+		/** Add or/and remove options from a poll as the creator **/
 		//TODO: VALIDATE OPTIONS
 		.post(requireAuth, function(req, res) {
 			/** Add new options to poll **/
@@ -446,9 +446,9 @@ module.exports = function (app, passport) {
 	//TODO: Validate Options
 	app.route('/api/createpoll')
 		.post(requireAuth, function(req, res) {
-			Poll.findOne({ question: req.body.question }, function(err, poll) {
+			Poll.findOne({ question: req.body.question, question_lower: req.body.question.toLowerCase() }, function(err, poll) {
 				
-				if( poll === null ) { //If this question isn't already created
+				/*if( poll === null ) { //If this question isn't already created
 					req.body.options = req.body.options.filter(function(item, i, ar){ return ar.indexOf(item) === i; }); //Make sure unique options
 					if( req.body.options.length > 1 ) {
 						
@@ -479,16 +479,58 @@ module.exports = function (app, passport) {
 						res.status(200).json({message: "You need at least two options for the poll.", success: false, pollSuccess: true, optionsSuccess: false});
 				}
 				else if( err )
+					res.status(200).json({message: "Error checking for poll existance", success: false, pollSuccess: false, optionsSuccess: false});*/
+				if(err)
 					res.status(200).json({message: "Error checking for poll existance", success: false, pollSuccess: false, optionsSuccess: false});
+				
+				else if( poll === null ) {
+					var validPoll = validateQuestionAndOptions(req.body.question, req.body.options);
+
+					if( validPoll.poll && validPoll.options ) {
+						var craftedOptions = createNewOptions(req.body.options);
+						
+						var createdPoll = new Poll({
+							question: req.body.question,
+							question_lower: req.body.question.toLowerCase(),
+							voters: [],
+							options: craftedOptions,
+							creationDate: { unix: moment().unix(), human: moment().format("MMM DD, YYYY") },
+							live: req.body.draft,
+							secret: req.body.secret
+						});
+						
+						createdPoll.creator.name = req.username;
+						createdPoll.creator.authenticated = true;
+						createdPoll.creator.ipaddress = req.headers['x-forwarded-for'];
+						
+						createdPoll.save( function(err) {
+							if (err) {
+								res.status(200).json({poll: createdPoll, message: "Failed to create your poll", success: false, pollSuccess: false, optionsSuccess: false });
+								throw err;
+							}
+							else
+								res.status(201).json({poll: createdPoll, message: "Successfully created your poll", success: true, pollSuccess: true, optionsSuccess: true });
+						});
+						
+					}
+					else if( validPoll.poll && !validPoll.questions ) {
+						res.status(200).json({message: "You need at least two valid options for the poll", success: false, pollSuccess: true, optionsSuccess: false});
+					}
+					else if( !validPoll.poll && validPoll.questions ) {
+						res.status(200).json({message: "You need a valid poll question, with at least 4 characters", success: false, pollSuccess: true, optionsSuccess: false});
+					}
+					else {
+						res.status(200).json({message: "Both the options and poll question are invalid", success: false, pollSuccess: false, optionsSuccess: false});
+					}
+				}
 				else
 					res.status(200).json({message: "This poll already exists", success: false, pollSuccess: false, optionsSuccess: true});
 			});
 			
 		});
 		
-	/** TODO: Protect **/
 	app.route('/api/user/polls')
-		.get( function(req, res) {
+		.get(requireAuth, function(req, res) {
 			Poll.find({ 'creator.name': req.username }, function(err, polls) {
 				res.status(200).json(polls);
 			});

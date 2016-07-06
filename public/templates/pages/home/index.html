@@ -1,6 +1,6 @@
 <script type="text/ng-template" id="group-template.html">
     <div class="panel {{panelClass || 'panel-default'}}">
-      <div class="panel-heading" ng-click="animatePanel(); toggleOpen(); isopen = !isopen;">
+      <div class="panel-heading" ng-click="toggleOpen(); isopen = !isopen;">
         <h4 class="panel-title">
           <a href tabindex="0" class="accordion-toggle" uib-accordion-transclude="heading">
             <span uib-accordion-header ng-class="{'text-muted': isDisabled}">
@@ -17,7 +17,7 @@
 </script>
 <div class="row">
 	<uib-accordion close-others="oneAtATime">
-		<uib-accordion-group heading="{{poll.question}}" ng-repeat="poll in allPolls" ng-click="displayPoll(poll, '#chart-' + $index, $index)" template-url="group-template.html">
+		<uib-accordion-group heading="{{poll.question}}" ng-repeat="poll in allPolls" ng-click="displayPoll(poll, '#chart-' + $index)" template-url="group-template.html">
 			<div class="row poll-information">
 				<div class="poll-creator col-lg-4 col-md-4 col-sm-4 col-xs-4">
 					<h4 class="pull-left">Created by {{poll.creator.name}}</h4>

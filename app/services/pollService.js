@@ -1,34 +1,49 @@
 'use strict';
 //var Poll = require('../models/poll.js');
 (function() {
-    angular.module('VotingApp').service('pollService', [ '$http', '$routeParams', 'chartFactory', function($http, $routeParams, chartFactory) {
-        this.options = [];
-        this.poll = {};
+    angular.module('VotingApp').service('pollService', [ '$http', '$routeParams', 'chartFactory', 'userService', function($http, $routeParams, chartFactory, userService) {
+        
+        this.userLoggedIn = false;
+        this.username = '';
+        
         var that = this;
         
         function option(text) {
-            this.vote = text;
-            this.count = 0;
+            this.optText = text;
         }
+        
+        function getUserStatus(error, username) {
+            if( error )
+                throw error;
+            else if( username !== '' ) {
+                that.username = username;
+                that.userLoggedIn = true;
+            }
+        }
+        
+        userService.getUsername(getUserStatus);
+        
+        //Check for IP Address too
+        var userHasVoted = function(poll) {
+            if( poll.voters.findIndex( voter => voter.username === that.username ) !== -1 )
+                return true;
+            else
+                return false;
+        };
         
         var setupPolls = function(polls) {
             for( var i = 0; i < polls.length; i++ ) {
                 polls[i].totalVotes = that.totalVotes(polls[i]);
-               // polls[i].chartLegend =
+                polls[i].chart = {};
+                polls[i].voteMessage = { submitted: false, message: "", error: false };   
+                polls[i].url = 'https://fcc-voting-app-will-is-coding.c9users.io/#/poll/' + polls[i]._id;
+                polls[i].userVote = polls[i].options[0];
+                polls[i].submitted = false;
+                polls[i].displaying = false;
+                polls[i].addError = false;
+                polls[i].alreadyVoted = userHasVoted(polls[i]);
             }
         };
-        
-        
-        //TODO: Use Regex or something to only add votes without only spaces and longer than one character
-        function createVotes(optionData) {
-            that.options = [];
-            for( var i = 0; i < optionData.length; i++ ) {
-                 if(optionData[i].length > 0) {
-                     var newOpt = new option(optionData[i]);
-                     that.options.push(newOpt);
-                }
-            }
-        }
         
         this.isUniqueOption = function(newOption, poll) {
             for( var i = 0; i < poll.options.length; i++ ) {
@@ -38,13 +53,16 @@
             return true;
         };
         
-        this.addOption = function(option, poll, handleAddOptionResponse) {
+        this.addOption = function(option, poll, chartID, handleAddOptionResponse) {
             if( this.isUniqueOption(option, poll) ) {
                 var newOption = { vote: option, count: 0 };
 
                 $http({method: 'PUT', url: '/api/poll/' + poll._id + '/' + option, data: JSON.stringify(newOption)})
                     .then( function successCB(response) {
-                        console.log(response.data.message);
+                        if( response.data.submitted ) {
+                            console.log(response.data.message);
+                            chartFactory.addOption(option, poll, chartID);
+                        }
                         handleAddOptionResponse(null, response.data);
                     }, function errorCB(error) {
                         handleAddOptionResponse(error, null);
@@ -55,6 +73,7 @@
             }
         };
         
+        //TODO: Change the chart & its legend upon update
         this.updateOptions = function(newOptions, removedOptions, poll_id, handlePollEdition) {
             var updateInfo = { _id: poll_id, newOptions: newOptions, removedOptions: removedOptions };
             $http({method: 'POST', url: '/api/poll/' + poll_id, data: JSON.stringify(updateInfo)})
@@ -68,28 +87,28 @@
         };
         
         this.createPoll = function(question, optionData, secret, draft, handlePollCreation) {
-            createVotes(optionData);
-            console.log(this.options);
-            var newPoll = { question: question, options: this.options, secret: secret, draft: draft };
+
+            var newPoll = { question: question, options: optionData, secret: secret, draft: draft };
+            console.log(optionData);
             $http({method:'POST', url: '/api/createpoll', data: JSON.stringify(newPoll) })
                 .then( function successCB(response) {
-                    that.poll = response.data;
                     console.log(response);
                     handlePollCreation(null, response.data);
                 },
                 function errorCB(error) { handlePollCreation(error, null); throw error; });
         };
         
-        this.fetchPoll = function(pollID, callback) {
+        this.fetchPoll = function(pollID, handlePoll) {
             $http({ method: 'GET', url: '/api/poll/' + pollID })
                 .then( function successCB(response) {
                     console.log(response);
                     that.poll = response.data;
-                    callback(null, response.data);
+                    setupPolls(response.data);
+                    handlePoll(null, response.data);
                 }, function errorCB(error) {
                     if(error)
                         console.log(error);
-                    callback(error, null);
+                    handlePoll(error, null);
                 });
         };
         
@@ -97,20 +116,35 @@
             $http({ method: 'GET', url: '/api/fetchpolls'})
                 .then( function successCB(response) {
                     setupPolls(response.data);
-                    handlePolls(null, response.data);
+                    handlePolls(null, response.data, that.username, that.userLoggedIn);
                 }, function errorCB(error) {
                     handlePolls(error, null);
                 } );
         };
         
-        this.submitVote = function(userVote, poll, optionID, chartID, handleResponse) {
+        this.getMyPolls = function( handlePolls ) {
+            if( this.userLoggedIn ) {
+                $http({ method: 'GET', url: '/api/user/polls'})
+                    .then( function successCB(response) {
+                        console.log(response);
+                        setupPolls(response.data);
+                        handlePolls(response.data);
+                        
+                    }, function errorCB(error) {
+                        if (error)
+                            throw error;
+                    });
+            }
+        };
+        
+        this.submitVote = function(userVote, poll, optionID, handleResponse) {
             var voteData = JSON.stringify({ _id: poll._id, option_id: optionID, vote: userVote});
             console.log(voteData);
             
             $http({method: 'PUT', url: '/api/poll/' + poll._id, data: voteData})
                 .then( function successCB(response) {
                     if( response.data.submitted === true ) {
-                        chartFactory.addVote(userVote, poll.options, chartID);
+                        chartFactory.addVote(userVote, poll);
                     }
                         
                     handleResponse(null, response.data);
@@ -125,8 +159,8 @@
                 });
         };
         
-        this.buildChart = function(options, id, widthRatio, pollsLegendHandling) {
-           chartFactory.createChart(options, id, widthRatio, pollsLegendHandling);  
+        this.buildChart = function(poll, id) {
+           chartFactory.createChart(poll, id);  
         };
         
         this.totalVotes = function(poll) {
@@ -137,9 +171,6 @@
             return count;
         };
         
-        this.clickLegend = function(legend, data) {
-            chartFactory.clickLegend(legend, data);    
-        };
         
         this.deletePoll = function(pollID) {
             console.log(pollID);
