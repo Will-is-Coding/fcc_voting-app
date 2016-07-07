@@ -7,8 +7,8 @@
             <div class="col-lg-8 col-md-8 col-sm-8 col-xs-12 col-center">
                 <form ng-submit="createPoll()" name="newPollForm" novalidate>
                     <div class="form-group has-feedback" 
-                    ng-class="{ 'has-error': ( (newPollForm.pollQuestion.$error.minlength || newPollForm.pollQuestion.$error.maxlength ) && newPollForm.pollQuestion.$dirty) || (creationError && !created && pollError),
-                    'has-success': (newPollForm.pollQuestion.$valid && newPollForm.pollQuestion.$dirty) || (!creationError && created) }">
+                    ng-class="{ 'has-error': newPollForm.pollQuestion.$error.minlength || newPollForm.pollQuestion.$error.maxlength  || (creationError && pollError),
+                    'has-success': newPollForm.pollQuestion.$valid && newPollForm.pollQuestion.$dirty && !creationError && !pollError }">
                         <label for="pollQuestion" >The Poll</label>
                         
                         <input type="text" class="form-control" id="pollQuestion" name="pollQuestion" 
@@ -16,33 +16,41 @@
                         placeholder="Poll Question" 
                         ng-minlength="2"
                         ng-maxlength="100"
+                        ng-change="pollRemoveError()"
                         required="required" />
+                        
                         <span ng-show="newPollForm.pollQuestion.$error.minlength && newPollForm.pollQuestion.$dirty" class="help-block">You need a valid poll question with at least two characters</span>
                         <span ng-show="newPollForm.pollQuestion.$error.maxlength && newPollForm.pollQuestion.$dirty" class="help-block">Cannot be longer than 100 characters</span>
-
-                        <span ng-show="!created && pollError" class="help-block">{{message}}</span>
+                        <span ng-show="creationError && pollError && !optionsError" class="help-block">{{message}}</span>
                     </div>
                     <label>Options</label>
                     <div class="form-group has-feedback" ng-repeat="option in options"
-                    ng-class="{'has-error': newOptForm.newOpt.$invalid || !option.unique || optionsError, 'has-success': newOptForm.newOpt.$valid && newOptForm.newOpt.$dirty && option.optText.length > 0}">
+                    ng-class="{'has-error': newOptForm.newOpt.$error.minlength || newOptForm.newOpt.$error.maxlength || !option.unique || (optionsError && creationError), 
+                    'has-success': newOptForm.newOpt.$valid && newOptForm.newOpt.$dirty && option.optText && !optionsError }">
+                        
                         <div class="input-group">
                             <ng-form name="newOptForm">
-                                <input type="text" class="form-control poll-option" ng-minlength="1" ng-maxlength="50" placeholder="Add Option" ng-model="option.optText" ng-change="checkIfUnique(option)" name="newOpt">
+                                <input type="text" class="form-control poll-option" ng-minlength="1" ng-maxlength="50" placeholder="Add Option" ng-model="option.optText" ng-change="checkIfUnique(option)" name="newOpt" ng-disabled="option.added">
                             </ng-form>
                             <span class="input-group-btn" class="add-option">
                                 <button class="btn glyphicon" ng-class="{ 'btn-success glyphicon-ok' : !option.added, 'btn-danger glyphicon-remove' : option.added }" type="button" ng-click="option.added ? removeOpt(option, $index) : addOpt(option, $index)"></button>
                             </span>
                         </div>
-                         <span ng-show="newOptForm.newOpt.$error.minlength && newOptForm.newOpt.$dirty" class="help-block">An option must have at least one character</span>
-                          <span ng-show="newPollForm.newOpt.$error.maxlength && newPollForm.pollQuestion.$dirty" class="help-block">Cannot be longer than 50 characters</span>
+                        
+                         <span ng-show="newPollForm.newOpt.$error.maxlength" class="help-block">Cannot be longer than 50 characters</span>
                          <span ng-show="!option.unique" class="help-block">This option has already been added</span>
-                         <span ng-show="optionsError && !created">{{message}}</span>
+                         <span ng-show="optionsError && creationError && !pollError" class="help-block">{{message}}</span>
                     </div>
                     <div class="form-group">
                         <label><input type="checkbox" name="private" ng-model="secret" disabled="disabled"> Private Poll </label>
                     </div>
+                    <div class="form-group has-feedback" ng-class="{ 'has-error': creationError && pollError && optionsError }">
+                        <span class="help-block" ng-show="creationError && pollError && optionsError">{{message}}</span>
+                    </div>
                     <button type="submit" class="btn"
-                    ng-class="{ 'btn-success': true, 'btn-danger': false }">Create</button>
+                    ng-class="{ 'btn-success': !creationError && newOptionsValid && newPollForm.pollQuestion.$valid,
+                    'btn-danger': creationError || !newOptionsValid || newPollForm.pollQuestion.$invalid }"
+                    ng-disabled="creationError || !newOptionsValid || newPollForm.pollQuestion.$invalid || !checkOptionsValid()">Create</button>
                     <button class="btn btn-danger" disabled="disabled">Save</button>
                 </form>
             </div>

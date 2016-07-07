@@ -4,10 +4,6 @@ var mongoose = require('mongoose');
 var bcrypt = require('bcryptjs');
 var Schema = mongoose.Schema;
 
-var Voted = new Schema({
-    poll_id: String,
-    vote: String
-});
 
 var User = new Schema({
     username: String,
@@ -15,6 +11,7 @@ var User = new Schema({
     password: String,
     email: String,
     ipaddress: String,
+
     token: String,
     active: Boolean,
     type: String

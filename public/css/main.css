@@ -20,6 +20,13 @@ body {
   margin-right: -4px; 
 }
 
+.glyph-red {
+  color: #a94442;
+}
+
+.glyph-green {
+  color: #449d44;
+}
 
 #account-bar {
   background-color: #11204d;
@@ -205,7 +212,7 @@ svg {
   display: block;
   margin: auto;
 }
-.legend {
+.legend, .disabled {
   font-size: 12px;
 }
 

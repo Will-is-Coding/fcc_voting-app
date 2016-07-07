@@ -1,26 +1,34 @@
 'use strict';
 (function() {
     angular.module('VotingApp').controller('UserPollsController', [ '$scope', 'userService', 'pollService', function($scope, userService, pollService) {
+        
         $scope.myPolls = [];
         $scope.updateSuccess = false;
         $scope.message = null;
         
         var tempPoll = null;
+        var tempPollIndex = null;
         
         function _option() {
            this.added = false;
            this.optText = '';
+           this.isUnique = true;
         }
        
-        var aUniqueOption = function (poll, opt) {
+        $scope.aUniqueOption = function (poll, opt) {
             for( var i = 0; i < poll.options.length; i++ ) {
-                if( poll.options[i].vote.toLowerCase() === opt.toLowerCase() )
+                if( opt.optText && poll.options[i].vote.toLowerCase() === opt.optText.toLowerCase() ) {
+                    opt.isUnique = false;
                     return false;
+                }
             }
             for( var k = 0; k < poll.newOptions.length; k++ ) {
-                if( poll.newOptions[k].optText.toLowerCase() === opt.toLowerCase() && poll.newOptions[k].added)
+                if( opt.optText && poll.newOptions[k].optText.toLowerCase() === opt.optText.toLowerCase() && poll.newOptions[k].added) {
+                    opt.isUnique = false;
                     return false;
+                }
             }
+            opt.isUnique = true;
             return true;
        };
        
@@ -48,7 +56,7 @@
        
        
         $scope.addOpt = function(poll, option, index) {
-            if( option.optText.length > 0 && aUniqueOption(poll, option.optText)) {
+            if( option.optText.length > 0 && $scope.aUniqueOption(poll, option)) {
                 option.added = true;
                 poll.newOptions.push(new _option());
             }
@@ -66,15 +74,28 @@
             }
         };
         
+        var cleanNewOptions = function(newOptions) {
+            var cleanOptions = [];
+            for( var i = 0; i < newOptions.length; i++ ) {
+                cleanOptions.push(newOptions[i].optText);
+            }
+            return cleanOptions;
+        };
+        
         var handlePollEdition = function(err, response) {
             console.log(response);
             if( err )
                 throw err;
             if( response.success ) {
                 $scope.updateSuccess = true;
-                for( var i = 0; i < tempPoll.newOptions.length; i++) {
-                    tempPoll.newOptions[i].submittedSuccess = true;
+
+                for( var i = tempPoll.newOptions.length - 1; i >= 0; i-- ) {
+                    console.log(tempPoll.newOptions);
+                    if( tempPoll.newOptions[i].added )
+                        tempPoll.newOptions.pop();
                 }
+                
+                tempPoll.options = response.options;
             }
             else
                 $scope.updateSucces = false;
@@ -84,15 +105,29 @@
           
         };
         
-        //TODO: CLEAN THE OPTIONS TO NOTHING BUT THE VOTE
         $scope.makePollOptionChanges = function(poll) {
             poll.newOptions.pop();
             tempPoll = poll;
-            pollService.updateOptions( poll.newOptions, poll.removedOptions, poll._id, handlePollEdition );
+            pollService.updateOptions( cleanNewOptions(poll.newOptions), poll.removedOptions, poll.options, poll._id, poll.creator.name, handlePollEdition );
         };
         
-        $scope.deletePoll = function(poll) {
-            pollService.deletePoll(poll._id);  
+        var handlePollDeletion = function(err, response) {
+            if( err || response.err )
+                throw err;
+
+            //$scope.myPolls[tempPollIndex].deletion = response;
+            console.log(response);
+            if( response.success ) {
+                $scope.myPolls.splice(tempPollIndex, 1);
+            }
+        };
+        
+        $scope.deletePoll = function(poll, index) {
+            
+            if( poll && index < $scope.myPolls.length ) {
+                tempPollIndex = index;
+                pollService.deletePoll(poll._id, handlePollDeletion);  
+            }
         };
         
     }]);

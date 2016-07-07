@@ -61,16 +61,29 @@ module.exports = function (app, passport) {
 		next();
 	};
 	
+	
+	var validOption = function(option) {
+		var validStringRegEx = /([A-Za-z0-9])+/;
+		if( option && validStringRegEx.exec(option) !== null && option.length <= 50)
+			return true;
+		else
+			return false;
+	};
+	
 	var validateQuestionAndOptions = function(question, options) {
 		var validStringRegEx = /([A-Za-z0-9])+/;
 		var validPoll = false;
 		var validOptions = false;
-		if( validStringRegEx.exec(question) !== null && question.length > 1 ) {
+		
+		if( options.length === 1 )
+			return { options: validOption(options[0]) };
+			
+		else if( question && validStringRegEx.exec(question) !== null && question.length > 1 ) {
 			validPoll = true;
 			options = options.filter(function(item, i, ar){ return ar.indexOf(item) === i; }); //Make sure unique options
 			if( options.length > 1) {
 				for( var i = 0; i < options.length; i++ ) {
-					if( options[i] && validStringRegEx.exec(options[i]) !== null ) {
+					if( options[i] && validStringRegEx.exec(options[i]) !== null && options[i].length <= 50 ) {
 						validOptions = true;
 					}
 					else
@@ -78,7 +91,7 @@ module.exports = function (app, passport) {
 				}
 			}
 		}
-		
+		console.log( validPoll + ' ' + validOptions );
 		return { poll: validPoll, options: validOptions };
 	};
 	
@@ -246,15 +259,24 @@ module.exports = function (app, passport) {
 		});
 		
 	/** Used as a callback after attempting an update to add options or called by itself if no new options **/
-	var removePollOptions = function(poll, optionsToRemove, res) {
-	/** Remove options from poll **/
-		poll.update({ $pull: { 'options': { _id: { $in: optionsToRemove } } } }, function(err, rawPoll) {
+	var removePollOptions = function(poll_id, optionsToRemove, res) {
+		
+		Poll.findByIdAndUpdate(poll_id, {
+			$pull: {
+				"options": {
+					_id: {
+						$in: optionsToRemove
+					}
+				}
+			}
+		}, { new: true },
+		function(err, poll) {
 			if( err ) {
 				res.status(304).json({message: "Error removing options", error: err, success: false});
 				throw err;
 			}
 			else {
-				res.status(200).json({message: "Successfully edited poll options.", success: true});
+				res.status(200).json({message: "Successfully edited poll options.", success: true, options: poll.options});
 			}
 		});
 	};
@@ -287,7 +309,7 @@ module.exports = function (app, passport) {
 			/** Search and attain the poll and specific vote to increment vote count and push ipaddress for validation. Checks if the ipaddres and user has not voted before **/
 			if( req.username ) {
 				Poll.findOneAndUpdate(
-					{ _id: req.body._id, "options._id" : req.body.option_id, "voters.username": { $ne: req.username } },
+					{ _id: req.body._id, "options._id" : req.body.option_id, "options.vote": req.body.vote, "voters.username": { $ne: req.username } },
 					{
 						$inc : { "options.$.count" : 1 },
 						$push:
@@ -317,7 +339,7 @@ module.exports = function (app, passport) {
 			/** If client not logged in, check against ipaddress **/
 			else {
 				Poll.findOneAndUpdate(
-					{ _id: req.body._id, "options._id" : req.body.option_id, "voters.ipaddress": { $ne: ipaddress } },
+					{ _id: req.body._id, "options._id" : req.body.option_id, "options.vote": req.body.vote, "voters.ipaddress": { $ne: ipaddress } },
 					{
 						$inc : { "options.$.count" : 1 },
 						$push:
@@ -345,50 +367,56 @@ module.exports = function (app, passport) {
 		})
 			
 		/** Add or/and remove options from a poll as the creator **/
-		//TODO: VALIDATE OPTIONS
+		//TODO: Middleware: Check if user is creator of poll;  VALIDATE OPTIONS - CHECK IF THEY ARE IN POLL ALREADY
 		.post(requireAuth, function(req, res) {
-			/** Add new options to poll **/
-			Poll.findById( req.params.id, function(err, poll) {
-				if( err ) {
-					res.status(200).json({message: "Error attaining poll to edit options!", error: err});
-				}
-				else if( poll !== null && poll.creator.name === req.username && (req.body.removedOptions || req.body.newOptions) ) {
-					
-					var newOptions = createNewOptions(req.body.newOptions);
-					var proposedOptionsLength = poll.options.length - req.body.removedOptions.length + newOptions.length;
-					
-					if( proposedOptionsLength > 1 ) {
-
-						if( newOptions.length > 0 ) {
-							poll.update({$push: { 'options': { $each: newOptions } }}, function(err, rawPoll) {
+			
+			if( req.body.removedOptions || req.body.newOptions ) {
+				var totalOptionsLength = req.body.options.length + req.body.newOptions.length;
+				if( totalOptionsLength > 1 ) {
+					if( req.body.newOptions ) { 
+						if( req.body.newOptions.length > 0 && validateQuestionAndOptions("options only", req.body.newOptions).options ) {
+							var formattedOptions = createNewOptions(req.body.newOptions);
+							
+							/** Add new options to poll **/
+							Poll.findByIdAndUpdate( req.params.id,{
+								$push: {
+									"options": {
+										$each: formattedOptions
+									}
+								}
+							}, { new: true },
+							function(err, poll) {
 								if( err ) {
 									res.status(304).json({message: "Error adding options", error: err, success: false});
 									throw err;
 								}
+								if( poll !== null ) {
+									if( req.body.removedOptions && req.body.removedOptions.length > 0 )
+										removePollOptions(poll._id, req.body.removedOptions, res);
+									else
+										res.status(200).json({message:"Successfully added options", success: true, options: poll.options});
+								}
 								else
-									removePollOptions(poll, req.body.removedOptions, res);
+									res.status(200).json({message:"Error finding or adding to poll", success: false});
 							});
 						}
-						
-						else if( req.body.removedOptions.length > 0 ) {
-							removePollOptions(poll, req.body.removedOptions, res);
-						}
-						
+						else 
+							res.status(200).json({message: "Invalid new options", success: false});
 					}
-					else {
-						res.status(200).json({message: "A poll must have at least two options.", success: false});
-					}
+					else 
+						removePollOptions( req.params.id, req.body.removedOptions, res );
 				}
-				else {
-					res.status(200).json({message: "Poll does not exist or options not valid", success: false});
-				}
-			});
+				else
+					res.status(200).json({message: "A poll must have at least two options", success: false});
+			}
+			else
+				res.status(200).json({message:"Must have options to add or remove", success: false});
 		})
 		/** Delete specific poll if user is the creator or an admin **/
 		.delete(requireAuth, function(req, res) {
 			Poll.findById(req.params.id, function(err, poll) {
 				if( err ) {
-					res.status(200).json({message: err, success: false});
+					res.status(200).json({error: err, success: false});
 					throw err;
 				}
 				
@@ -400,86 +428,79 @@ module.exports = function (app, passport) {
 					res.status(200).json({message: "Failed to delete poll. Could not be found or not the creator.", success: false});
 			});
 		});
+		
+	
 			
 	/** Adds an option to a poll **/
-	//TODO: Validate Option
+	//TODO: Middleware check if option is not already in poll
 	app.route('/api/poll/:id/:option')
 		.put(requireAuth, function(req, res) {
 			
-			Poll.findById(req.params.id, function(err, poll) {
-				if( err ) {
-					res.status(200).json({message: err, submitted: false});
-					throw err;
-				}
-				
-				var optIndexIfUserAdded = poll.options.findIndex( option => option.addedBy === req.username );
-				
-				//Check if user has added option already or if they are the creator
-				if( optIndexIfUserAdded  === -1 || poll.creator.name.toLowerCase() === req.username.toLowerCase() ) {
-					//Check if it is a valid option and it isn't already available
-					if( req.body.vote !== undefined && req.body.vote !== " " &&
-					poll.options.findIndex( option => option.vote.toLowerCase() === req.body.vote.toLowerCase() ) === -1 ) {
-						poll.update({ 
-							$push: {
-								"options": {
-									'vote': req.body.vote,
-									'count': 0,
-									'addedBy': req.username
-								}
-							}
-						}, function(err, rawOpt) {
-							if( err ) {
-								res.status(200).json({message: err, submitted: false});
-							}
 
-							res.status(201).json({message: "Option Added", submitted: true });
-						});
-					}
-					else
-						res.status(200).json({message: "Not a valid option", submitted: false});
+			var optIndexIfUserAdded = req.body.options.findIndex( option => option.addedBy === req.username );
+			var isUniqueOption = req.body.options.findIndex( option => option.vote.toLowerCase() === req.body.vote.toLowerCase() );
+			
+			if( validOption(req.body.vote) && isUniqueOption === -1 ) {
+				if( optIndexIfUserAdded === -1 || req.body.creator.toLowerCase() === req.username.toLowerCase() ) {
+					
+					Poll.findByIdAndUpdate( req.params.id, {
+						$push: {
+							"options": {
+								"vote": req.body.vote,
+								"count": 0,
+								"addedBy": req.username
+							}
+						}
+					}, { new: true },
+					function(err, poll) {
+						if( err ) {
+							res.status(200).json({message: err, submitted: false});
+						}
+						res.status(201).json({message: "Option Added", submitted: true, options: poll.options });
+					});
+					
 				}
 				else
 					res.status(200).json({message: "You've already added an option", submitted: false});
-			});
+			}
+			else
+				res.status(200).json({message: "Not a valid option", submitted: false});
+		});
+	
+	/**
+	 * ROUTES:
+	 *		DELETE: Delete users' vote from poll
+	 *
+	 */
+	app.route('/api/poll/:id/remove_vote/:option')
+		.delete(requireAuth, function(req, res) {
+			Poll.findOneAndUpdate( {_id: req.params.id, "options._id" : req.params.option },
+				{
+					$inc: {
+						"options.$.count": -1
+					},
+					$pull: {
+						voters: { $in: [req.username] }
+					}
+				}, {new: true}, function(err, poll) {
+					if( err ) {
+						res.status(200).json({error: err, submitted: false});
+						throw err;
+					}
+					if( poll ) {
+						console.log(poll.voters);
+						res.status(200).json({message: "Removed your vote", submitted: true, options: poll.options});
+					}
+					else
+						res.status(200).json({message: "Error updating poll", submitted: false});
+				});
 		});
 		
-	//TODO: Validate Options
+
 	app.route('/api/createpoll')
 		.post(requireAuth, function(req, res) {
 			Poll.findOne({ question: req.body.question, question_lower: req.body.question.toLowerCase() }, function(err, poll) {
 				
-				/*if( poll === null ) { //If this question isn't already created
-					req.body.options = req.body.options.filter(function(item, i, ar){ return ar.indexOf(item) === i; }); //Make sure unique options
-					if( req.body.options.length > 1 ) {
-						
-						var createdPoll = new Poll({
-							question: req.body.question,
-							question_lower: req.body.question.toLowerCase(),
-							voters: [],
-							options: req.body.options,
-							creationDate: { unix: moment().unix(), human: moment().format("MMM DD, YYYY") },
-							live: req.body.draft,
-							secret: req.body.secret
-						});
-						
-						createdPoll.creator.name = req.username;
-						createdPoll.creator.authenticated = true;
-						createdPoll.creator.ipaddress = req.headers['x-forwarded-for'];
-		
-						createdPoll.save( function(err) {
-							if (err) {
-								res.status(200).json({poll: createdPoll, message: "Failed to create your poll", success: false, pollSuccess: false, optionsSuccess: false });
-								throw err;
-							}
-							else
-								res.status(201).json({poll: createdPoll, message: "Successfully created your poll", success: true, pollSuccess: true, optionsSuccess: true });
-						});
-					}
-					else
-						res.status(200).json({message: "You need at least two options for the poll.", success: false, pollSuccess: true, optionsSuccess: false});
-				}
-				else if( err )
-					res.status(200).json({message: "Error checking for poll existance", success: false, pollSuccess: false, optionsSuccess: false});*/
 				if(err)
 					res.status(200).json({message: "Error checking for poll existance", success: false, pollSuccess: false, optionsSuccess: false});
 				
@@ -505,11 +526,11 @@ module.exports = function (app, passport) {
 						
 						createdPoll.save( function(err) {
 							if (err) {
-								res.status(200).json({poll: createdPoll, message: "Failed to create your poll", success: false, pollSuccess: false, optionsSuccess: false });
+								res.status(200).json({ err: err, message: "Failed to create your poll", success: false, pollSuccess: false, optionsSuccess: false });
 								throw err;
 							}
 							else
-								res.status(201).json({poll: createdPoll, message: "Successfully created your poll", success: true, pollSuccess: true, optionsSuccess: true });
+								res.status(201).json({poll_id: createdPoll._id, message: "Successfully created your poll", success: true, pollSuccess: true, optionsSuccess: true });
 						});
 						
 					}
@@ -543,7 +564,7 @@ module.exports = function (app, passport) {
 		});
 	});
 	
-	app.get('/api/deleteall', function(req, res) {
+	app.get('/api/deleteallusers', function(req, res) {
 		User.remove({}, function(err, user) {
 			res.status(200).json({message:"Deleted all users"});
 		});
@@ -555,26 +576,19 @@ module.exports = function (app, passport) {
 		});
 	});
 	
-	app.get('/api/deletevoters/:id', function(req, res) {
-		Poll.findOneAndUpdate({ _id: req.params.id }, function(err, poll) {
-			poll.voters = [];
-			res.status(200).json(poll);
-		});
-	});
-	
-	app.post('/api/deletepoll/:id', function(req, res) {
-		Poll.findOneAndRemove({ _id: req.params.id }, function(err, poll) {
-			if(err)
-				throw err;
-			res.status(200).redirect('../../');
-		});
-	});
-	
-	app.get('/api/deletepoll/:id', function(req, res) {
-		Poll.findOneAndRemove({ _id: req.params.id }, function(err, poll) {
-			if(err)
-				throw err;
-			res.status(200).redirect('../../');
+	app.get('/api/deletevotes/:id', function(req, res) {
+		
+		Poll.findById(req.params.id, function(err, poll) {
+			
+			if( poll ) {
+				var optionsToReturn = [ {vote: "A", count: 0}, {vote:"B", count: 0}];
+				
+				poll.update({}, { $set: { "options.$.count": 0 }}, function(err, raw) {
+					res.status(200).json(poll);
+				});
+			}
+			else
+				res.status(200).json({message: "Nope"});
 		});
 	});
 	

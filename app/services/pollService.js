@@ -23,12 +23,27 @@
         
         userService.getUsername(getUserStatus);
         
-        //Check for IP Address too
+        //Check for IP Address too; Check if user is creator of poll
         var userHasVoted = function(poll) {
-            if( poll.voters.findIndex( voter => voter.username === that.username ) !== -1 )
+
+            var voterIndexIfUserAdded = poll.voters.findIndex( voter => voter.username === that.username );
+            if( voterIndexIfUserAdded !== -1 ) {
+                poll.userVotedFor = poll.voters[voterIndexIfUserAdded].votedFor_id;
                 return true;
-            else
+            }
+            else {
+                poll.userVotedFor = null;
                 return false;
+            }
+        };
+        
+        var userAlreadyAddedOption = function(poll) {
+            if( that.userLoggedIn ) {
+                if( poll.options.findIndex( option => option.addedBy && option.addedBy === that.username ) !== -1 ) {
+                    return true;
+                }
+            }
+            return false;
         };
         
         var setupPolls = function(polls) {
@@ -42,6 +57,7 @@
                 polls[i].displaying = false;
                 polls[i].addError = false;
                 polls[i].alreadyVoted = userHasVoted(polls[i]);
+                polls[i].alreadyAdded = userAlreadyAddedOption(polls[i]);
             }
         };
         
@@ -55,15 +71,17 @@
         
         this.addOption = function(option, poll, chartID, handleAddOptionResponse) {
             if( this.isUniqueOption(option, poll) ) {
-                var newOption = { vote: option, count: 0 };
-
+                var newOption = { vote: option, options: poll.options, creator: poll.creator.name };
+                
                 $http({method: 'PUT', url: '/api/poll/' + poll._id + '/' + option, data: JSON.stringify(newOption)})
                     .then( function successCB(response) {
+                        
                         if( response.data.submitted ) {
-                            console.log(response.data.message);
                             chartFactory.addOption(option, poll, chartID);
                         }
+                        
                         handleAddOptionResponse(null, response.data);
+                        
                     }, function errorCB(error) {
                         handleAddOptionResponse(error, null);
                     });
@@ -73,9 +91,10 @@
             }
         };
         
+        
         //TODO: Change the chart & its legend upon update
-        this.updateOptions = function(newOptions, removedOptions, poll_id, handlePollEdition) {
-            var updateInfo = { _id: poll_id, newOptions: newOptions, removedOptions: removedOptions };
+        this.updateOptions = function(newOptions, removedOptions, allOptions, poll_id, poll_creator, handlePollEdition) {
+            var updateInfo = { _id: poll_id, newOptions: newOptions, removedOptions: removedOptions, options: allOptions, creator: poll_creator };
             $http({method: 'POST', url: '/api/poll/' + poll_id, data: JSON.stringify(updateInfo)})
                 .then( function successCB(response) {
                     console.log(response);
@@ -89,7 +108,7 @@
         this.createPoll = function(question, optionData, secret, draft, handlePollCreation) {
 
             var newPoll = { question: question, options: optionData, secret: secret, draft: draft };
-            console.log(optionData);
+
             $http({method:'POST', url: '/api/createpoll', data: JSON.stringify(newPoll) })
                 .then( function successCB(response) {
                     console.log(response);
@@ -159,6 +178,22 @@
                 });
         };
         
+        this.removeVote = function(poll, handleRemoveVote) {
+            if( poll.alreadyVoted && poll.userVotedFor )  {
+                console.log(poll);
+                $http({method: 'DELETE', url: '/api/poll/' + poll._id + '/remove_vote/' + poll.userVotedFor})
+                    .then( function successCB(response) {
+                        if( response.data.submitted ) {
+                            poll.options = response.data.options;
+                            chartFactory.removeVote(poll);
+                        }
+                        handleRemoveVote(null, response.data);
+                    }, function errorCB(error) {
+                       handleRemoveVote(error, null); 
+                    });
+          }
+        };
+        
         this.buildChart = function(poll, id) {
            chartFactory.createChart(poll, id);  
         };
@@ -172,15 +207,18 @@
         };
         
         
-        this.deletePoll = function(pollID) {
+        this.deletePoll = function(pollID, handlePollDeletion) {
             console.log(pollID);
-          $http({method: 'DELETE', url: '/api/poll/' + pollID})
-            .then( function successCB(response) {
-                console.log(response);
-            }, function errorCB(error) {
-                if( error )
-                    throw error;
-            });
+            $http({method: 'DELETE', url: '/api/poll/' + pollID})
+                .then( function successCB(response) {
+                    console.log(response);
+                    handlePollDeletion(null, response.data);
+                }, function errorCB(error) {
+                    if( error ) {
+                        handlePollDeletion(error, null);
+                        throw error;
+                    }
+                });
         };
         
     }]);

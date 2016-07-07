@@ -17,7 +17,7 @@
 </script>
 <div class="row" ng-show="myPolls.length > 0">
     <uib-accordion close-others="oneAtATime">
-        <uib-accordion-group template-url="group-template.html" ng-repeat="poll in myPolls" heading="{{poll.question}}" ng-click="drawPoll(poll,'#chart-' + $index )">
+        <uib-accordion-group template-url="group-template.html" ng-repeat="poll in myPolls" heading="{{poll.question}}" ng-click="drawPoll(poll,'#chart-' + $index )" id="{{'poll-' + $index}}">
             <div class="row poll-information">
     			<div class="poll-creator col-lg-4 col-md-4 col-sm-4 col-xs-4">
     				<h4 class="pull-left">Created by You</h4>
@@ -58,36 +58,47 @@
                                                 type="button"></button>
                                             </span>
     					                </div>
-    					                <div class="input-group" ng-repeat="newOption in poll.newOptions">
-    					                    <input text="text" name="" 
+					                
+    					                <div class="input-group has-feedback" ng-repeat="newOption in poll.newOptions"
+    					                ng-class="{'has-error': !newOption.isUnique && newOption.optText, 'has-success': newOption.isUnique && newOption.optText && !newOption.added }">
+
+    					                    <input text="text" name="newOpt"
     					                    class="form-control poll-option"
     					                    ng-minlength="1"
+    					                    ng-maxlength="50"
     					                    placeholder="New Option"
     					                    ng-model="newOption.optText"
-    					                    ng-disabled="newOption.submittedSuccess">
+    					                    ng-change="aUniqueOption(poll, newOption)"
+    					                    ng-disabled="newOption.submittedSuccess || newOption.added">
+
     					                    <span class="input-group-btn">
                                                 <button class="btn btn-secondary glyphicon"
                                                 ng-class="{'btn-danger glyphicon-remove': newOption.added, 'btn-success glyphicon-ok': !newOption.added}" 
                                                 ng-click="newOption.added ? removeOpt(newOption, poll, $index, false) : addOpt(poll, newOption, $index)"
+                                                ng-disabled="(!newOption.isUnique && newOption.optText)"
                                                 type="button"></button>
                                             </span>
+                                            
     					                </div>
+    					                
     				                </div>
     					            <button type="submit" class="btn btn-success">Change Poll</button>
-    					            <span class="help-block" ng-show="updateSuccess">{{message}}</span>
-    					            <span class="help-block" ng-show="!updateSuccess && message">{{message}}</span>
+    					            <div class="form-group has-feedback" ng-class="{'has-error': !updateSuccess && message, 'has-success': updateSuccess}">
+        					            <span class="help-block" ng-show="updateSuccess">{{message}}</span>
+        					            <span class="help-block" ng-show="!updateSuccess && message">{{message}}</span>
+    					            </div>
     					        </form>
     					    </div>
     					</div>
     					<div class="row text-center" id="poll-manage">
-    					    <button type="submit" class="btn btn-danger" ng-click="deletePoll(poll)">Delete Poll</button>
+    					    <button type="submit" class="btn btn-danger" ng-click="deletePoll(poll, $index)">Delete Poll</button>
     					    <button type="submit" class="btn btn-default" disabled>Hide Poll</button>
     					    <button type="submit" class="btn btn-default" disabled>Clear Votes</button>
     					</div>
     			    </div> <!--End right block -->
                 </div>
             </div>
-            <div class="row poll-legend-share">
+            <div class="row legend-share-info">
     			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
     				<span class="pull-left">* Legend is clickable to remove options</span>
     			</div>
@@ -95,7 +106,7 @@
     				<div class="input-group pull-right">
     					<input id="poll-link" type="text" class="form-control" value="{{poll.url}}" select-on-click readonly>
     					<span class="input-group-btn">
-    						<button class="btn btn-secondary btn-success" type="button" ngclipboard data-clipboard-text="{{poll.url}}">Share</button>
+    						<button class="btn btn-secondary btn-info" type="button" ngclipboard data-clipboard-text="{{poll.url}}">Share</button>
     					</span>
     				</div>
     			</div>

@@ -1,7 +1,4 @@
 'use strict';
-/** TODO: FIX VALIDATION ON FORM; ALLOW CREATING ANOTHER POLL WHEN CLICKING 'NEW POLL' **/
-/** ERR: CURRENTLY FAILING TO ADD CORRECTLY, NEXT NEW POLL COMBINES WITH LAST ONE **/
-/** ERR: IF POLL EXISTS DOES NOT RETURN CORRECTLY NOR RESET OPTIONS CORRECTLY **/
 ( function() {
     angular.module('VotingApp').controller('PollCreationController', ['$scope', '$http', 'pollService', function($scope, $http, pollService) {
         $scope.poll = '';
@@ -10,6 +7,7 @@
         $scope.created = false;
         $scope.creationError = false;
         $scope.creationMessage = "";
+        $scope.newOptionsValid = false;
         $scope.tempOptions = [];
         
         function _option() {
@@ -20,27 +18,42 @@
         
         $scope.options = [new _option(), new _option()];
         
+        $scope.pollRemoveError = function() {
+            if( !$scope.poll || $scope.poll.length <= 0 ) {
+                $scope.creationError = false;
+                $scope.pollError = false;
+            }
+        };
+        
         $scope.checkIfUnique = function(newOption) {
             if( newOption.optText !== undefined || newOption.optText !== '' ) {
-                if( $scope.options.findIndex( option => option.optText.toLowerCase() === newOption.optText.toLowerCase() && option.added && option.optText.length === newOption.optText.length ) !== -1 )
+                if( $scope.options.findIndex( option => option.optText.toLowerCase() === newOption.optText.toLowerCase() && option.added && option.optText.length === newOption.optText.length ) !== -1 ) {
                     newOption.unique = false;
-                else
+                    $scope.newOptionsValid = false;
+                }
+                else {
                     newOption.unique = true;
+                    $scope.newOptionsValid = true;
+                }
             }
-            else
+            else {
                 newOption.unique = true;
+                $scope.newOptionsValid = true;
+            }
         };
        
         $scope.addOpt = function(option, index) {
             if( option.optText.length > 0 && option.unique ) {
                 option.added = true;
+                $scope.newOptionsValid = true;
                 if( index !== 0 )
                     $scope.options.push(new _option());
             }
+            else
+                $scope.newOptionsValid = false;
         };
         
         $scope.removeOpt = function(option, index) {
-            console.log('here');
             if(index !== -1 ) {
                 $scope.options.splice(index, 1);
                 if( $scope.options.length < 2 )
@@ -48,30 +61,38 @@
             }
         };
         
-        var checkOptionsValid = function() {
+        $scope.checkOptionsValid = function() {
             var amountAdded = 0;
             for( var i = 0; i < $scope.options.length; i++ ) {
                 if( $scope.options[i].added )
                     amountAdded++;
             }
-            if( amountAdded > 1 )
+            if( amountAdded > 1 ) {
+                $scope.newOptionsValid = true;
                 return true;
-            else
+            }
+            else {
+                $scope.newOptionsValid = false;
                 return false;
-        };
-        
-        var cleanOptions = function() {
-            $scope.tempOptions = $scope.options;
-            for( var i = 0; i < $scope.options.length; i++ ) {
-                if( $scope.options[i].optText !== '' && $scope.options[i].optText.length > 0 && $scope.options[i].added )
-                    $scope.options[i] = $scope.options[i].optText;
-                else
-                    $scope.options.splice(i, 1);
             }
         };
         
+        var cleanOptions = function() {
+            $scope.tempOptions = [];
+            for( var i = 0; i < $scope.options.length; i++ ) {
+                if( $scope.options[i].optText !== '' && $scope.options[i].optText.length > 0 && $scope.options[i].added ) {
+                    console.log($scope.options);
+                    $scope.tempOptions[i] = $scope.options[i].optText;
+                }
+                else
+                    $scope.tempOptions.splice(i, 1);
+            }
+
+        };
+        
         var handlePollCreation = function(err, response) {
-            if( err ) {
+            console.log(response);
+            if( err || response.err ) {
                 $scope.created = false;
                 $scope.message = "Error!";
                 console.log(err);
@@ -79,27 +100,28 @@
             }
             else if( response.success ) {
                 $scope.created = true;
+                $scope.creationError = false;
+                $scope.pollError = false;
+                $scope.optionsError = false;
                 $scope.message = response.message;
                 $scope.options = [new _option(), new _option()];
                 $scope.poll = "";
-                $scope.newPollUrl = "https://fcc-voting-app-will-is-coding.c9users.io/#/poll/" + response.poll._id;
+                $scope.newPollUrl = "https://fcc-voting-app-will-is-coding.c9users.io/#/poll/" + response.poll_id;
             }
             else {
                 $scope.created = false;
                 $scope.creationError = true;
                 $scope.message = response.message;
-                $scope.pollError = response.poll;
-                $scope.optionsError = response.options;
+                $scope.pollError = !response.pollSuccess;
+                $scope.optionsError = !response.optionsSuccess;
             }
         };
 
         $scope.createPoll = function() {
             
-            if( $scope.poll.length > 0 && $scope.options.length > 1 && checkOptionsValid() ) {
+            if( $scope.poll.length > 0 && $scope.options.length > 1 && $scope.checkOptionsValid() ) {
                 cleanOptions();
-                console.log($scope.options);
-                console.log($scope.poll);
-                pollService.createPoll($scope.poll, $scope.options, $scope.secret, $scope.draft, handlePollCreation);
+                pollService.createPoll($scope.poll, $scope.tempOptions, $scope.secret, $scope.draft, handlePollCreation);
             }
             else {
                 $scope.created = false;

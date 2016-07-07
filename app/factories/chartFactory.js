@@ -119,7 +119,7 @@
                 
                 
                 if (rect.attr('class') === 'disabled') {
-                  rect.attr('class', '');
+                  rect.attr('class', 'legend');
                 } else {
                   if (totalEnabled < 2) return;
                   rect.attr('class', 'disabled');
@@ -237,6 +237,71 @@
               .attr('x', legendRectSize + legendSpacing)
               .attr('y', legendRectSize - legendSpacing)
               .text(function(d) { return d; });
+        };
+        
+        chart.removeVote = function(poll) {
+          
+          var color = poll.chart.color;
+          var svg = poll.chart.svg;
+          var legend = poll.chart.legend;
+          var pie = poll.chart.pie;
+          var path = poll.chart.path;
+          var arc = poll.chart.arc;
+          var radius = poll.chart.radius;
+          
+          if(!hasVotes(poll.options)) {
+            var data = [{vote:"No Votes", count: 1}];
+            color = d3.scale.category20();
+            color(data[0].vote);
+            legend = svg.selectAll('.legend').remove();
+          }
+          else
+            data = poll.options;
+          
+          data.forEach(function(d) { d.enabled = true; });
+          
+          console.log(data);
+          
+          path.data(pie(data));
+          
+          path.transition()
+            .duration(750)
+            .attr("fill", function(d) {
+              return color(d.data.vote);
+            })
+            .attrTween('d', function(d) {
+              var interpolate = d3.interpolate(this._current, d);
+              this._current = interpolate(0);
+              return function(t) {
+                return arc(interpolate(t));
+              };
+            });
+            
+          console.log(color.domain());
+
+          legend = svg.selectAll('.legend')
+              .data(color.domain())
+              .enter()
+              .append('g')
+              .attr('class', 'legend')
+              .attr('transform', function(d, i) {
+                var height = legendRectSize + legendSpacing;
+                var vert = -radius + ( i * height);
+                var horz = radius + legendSpacing + 25;
+                return 'translate(' + horz + ',' + vert +')';
+            });
+
+            legend.append('rect')
+              .attr('width', legendRectSize)
+              .attr('height', legendRectSize)
+              .style('fill', color)
+              .style('stroke', color);
+              
+            legend.append('text')
+            .attr('x', legendRectSize + legendSpacing)
+            .attr('y', legendRectSize - legendSpacing)
+            .text(function(d) { return d; });
+          
         };
         
         //TODO: If user votes for new option after adding, make it display
