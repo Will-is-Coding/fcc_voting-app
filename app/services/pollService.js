@@ -80,7 +80,9 @@
                     .then( function successCB(response) {
                         
                         if( response.data.submitted ) {
-                            chartFactory.addOption(option, poll, chartID, response.data.options);
+                            //chartFactory.addOption(option, poll, chartID, response.data.options);
+                            chartFactory.editOptions(poll, response.data.options, true);
+                            chartFactory.addOrRemoveVote(poll, response.data.options, false);
                         }
                         
                         handleAddOptionResponse(null, response.data);
@@ -108,7 +110,9 @@
                 $http({method: 'DELETE', url: '/api/poll/' + poll._id + '/' + poll.userAddedOptionID})
                     .then( function successCB(response) {
                         if( response.data.submitted ) {
-                            chartFactory.removeOption(response.data.options, poll);
+                            //chartFactory.removeOption(response.data.options, poll);
+                            chartFactory.editOptions(poll, response.data.options, false);
+                            chartFactory.addOrRemoveVote(poll, response.data.options, false);
                             //removeUserIfVotedForOption(poll);
                         }
                             

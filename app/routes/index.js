@@ -437,7 +437,7 @@ module.exports = function (app, passport) {
 	 *		DELETE: Delete users' vote from poll
 	 *
 	 */
-	//TODO: Middleware check if option is not already in poll
+	//TODO: Middleware check if option is not already in poll - current error: user can add new option that is unique multiple times
 	app.route('/api/poll/:id/:option')
 		.put(requireAuth, function(req, res) {
 			

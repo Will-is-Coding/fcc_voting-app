@@ -170,6 +170,32 @@
           svgCreation(data, id, poll);
         };
         
+        chart.editOptions = function(poll, newOptions, add) {
+          
+          if( !add )
+            poll.chart.color = d3.scale.category20();
+          
+          for( var i = 0; i < newOptions.length; i++ ) {
+              poll.chart.color(newOptions[i].vote);
+            }
+          
+          poll.chart.path = poll.chart.svg.selectAll('path')
+              .data(poll.chart.pie(newOptions))
+              .enter()
+              .append('path')
+              .attr('d', poll.chart.arc)
+                .each(function(d) {
+                  this._current = d;
+                });
+                
+          if( !add ) {
+              poll.chart.path = poll.chart.svg.selectAll('path')
+              .data(poll.chart.pie(newOptions));
+              poll.chart.path.exit().remove();
+          }
+
+        };
+        
 
         chart.addOrRemoveVote = function(poll, newOptions, add) {
 
@@ -200,23 +226,18 @@
               }
             }
 
-            console.log(data);
-            console.log(color.domain());
+
             if( (!hasVotes(poll.options) && add) || ( !hasVotes(newOptions) && !add) ) {
               svg.selectAll('path').remove();
               path = svg.selectAll('path')
               .data(pie(data))
               .enter()
               .append('path');
-              //path = path.data(pie(data));
-              console.log(path.data());
-              console.log(pie(data));
+
               path
                 .transition()
                 .duration(750)
                 .attr("fill", function(d) {
-                  console.log(d);
-                
                   return color(d.data.vote);
                 })
                 .attr('d', poll.chart.arc)
@@ -276,6 +297,10 @@
               .attr('x', legendRectSize + legendSpacing)
               .attr('y', legendRectSize - legendSpacing)
               .text(function(d) { return d; });
+              
+            legend = svg.selectAll('.legend')
+                .data(color.domain());
+              legend.exit().remove();
         };
         
         
