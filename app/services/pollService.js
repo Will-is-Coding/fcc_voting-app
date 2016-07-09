@@ -12,16 +12,17 @@
             this.optText = text;
         }
         
-        function getUserStatus(error, username) {
+        this.getUserStatus = function(error, username) {
             if( error )
                 throw error;
             else if( username !== '' ) {
                 that.username = username;
                 that.userLoggedIn = true;
             }
-        }
+            console.log(that.userLoggedIn);
+        };
         
-        userService.getUsername(getUserStatus);
+        userService.getUsername(this.getUserStatus);
         
         //Check for IP Address too; Check if user is creator of poll
         var userHasVoted = function(poll) {
@@ -39,7 +40,9 @@
         
         var userAlreadyAddedOption = function(poll) {
             if( that.userLoggedIn ) {
-                if( poll.options.findIndex( option => option.addedBy && option.addedBy === that.username ) !== -1 ) {
+                var optionIndexIfAdded = poll.options.findIndex( option => option.addedBy && option.addedBy === that.username );
+                if( optionIndexIfAdded !== -1 ) {
+                    poll.userAddedOptionID = poll.options[optionIndexIfAdded]._id;
                     return true;
                 }
             }
@@ -77,7 +80,7 @@
                     .then( function successCB(response) {
                         
                         if( response.data.submitted ) {
-                            chartFactory.addOption(option, poll, chartID);
+                            chartFactory.addOption(option, poll, chartID, response.data.options);
                         }
                         
                         handleAddOptionResponse(null, response.data);
@@ -89,6 +92,32 @@
             else {
                 handleAddOptionResponse(null, {message: "Option already available", submitted: false});
             }
+        };
+        
+        var removeUserIfVotedForOption = function(poll) {
+            var optRemovedIndex = poll.options.findIndex( option => option._id === poll.userAddedOptionID );
+            if( optRemovedIndex !== - 1) {
+                poll.alreadyVoted = false;
+            }
+        };
+        
+        this.removeOption = function(poll, handleRemoveOptionResponse) {
+
+            if( this.userLoggedIn && poll.userAddedOptionID ) {
+
+                $http({method: 'DELETE', url: '/api/poll/' + poll._id + '/' + poll.userAddedOptionID})
+                    .then( function successCB(response) {
+                        if( response.data.submitted ) {
+                            chartFactory.removeOption(response.data.options, poll);
+                            //removeUserIfVotedForOption(poll);
+                        }
+                            
+                        handleRemoveOptionResponse(null, response.data);
+                        
+                    }, function errorCB(error) {
+                        handleRemoveOptionResponse(error, null);
+                    });
+            }  
         };
         
         
@@ -163,7 +192,7 @@
             $http({method: 'PUT', url: '/api/poll/' + poll._id, data: voteData})
                 .then( function successCB(response) {
                     if( response.data.submitted === true ) {
-                        chartFactory.addVote(userVote, poll);
+                        chartFactory.addOrRemoveVote(poll, response.data.options, true);
                     }
                         
                     handleResponse(null, response.data);
@@ -184,8 +213,8 @@
                 $http({method: 'DELETE', url: '/api/poll/' + poll._id + '/remove_vote/' + poll.userVotedFor})
                     .then( function successCB(response) {
                         if( response.data.submitted ) {
-                            poll.options = response.data.options;
-                            chartFactory.removeVote(poll);
+                            //poll.options = response.data.options;
+                            chartFactory.addOrRemoveVote(poll, response.data.options, false);
                         }
                         handleRemoveVote(null, response.data);
                     }, function errorCB(error) {

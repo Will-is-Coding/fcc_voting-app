@@ -99,6 +99,7 @@
 						ng-class="{ 'btn-primary': addOptForm.newOption.$valid && userNewOption.text && userNewOption.unique,
 						'btn-danger': ((addOptForm.newOption.$error.maxlength || !userNewOption.unique || poll.addError) && userNewOption.text) || poll.alreadyAdded || !loggedIn }"
 						ng-disabled="!loggedIn || addOptForm.$invalid || !userNewOption.unique || poll.alreadyAdded">Add</button>
+						<button type="button" class="btn btn-primary" ng-show="poll.alreadyAdded && loggedIn" ng-click="removeOption(poll, $index)">Remove My Option</button>
 					</form>
 				</div>
 			</div>

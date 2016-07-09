@@ -1,6 +1,7 @@
 'using strict';
 (function() {
   /** TODO: FIX SIZING ON ALL WEBPAGE WIDTHS        
+   * Shows tooltip of "1 vote(s) and percent when No Votes"
   **/
     angular.module('VotingApp').factory('chartFactory', [ function() {
         var chart = {};
@@ -40,7 +41,7 @@
               .outerRadius(poll.chart.radius);
           
           poll.chart.pie = d3.layout.pie()
-              .value(function(d) { return d.count; })
+              .value(function(d) { console.log(d); return d.count; })
               .sort(null);
           
           var ttip = d3.select(id)
@@ -56,12 +57,37 @@
           ttip.append('div')
               .attr('class', 'percent');
               
+              
           poll.chart.path = poll.chart.svg.selectAll('path')
               .data(poll.chart.pie(data))
               .enter()
               .append('path');
+          
+          poll.chart.path
+              .on('mouseover', function(d) {
+                  var total = d3.sum(data.map(function(d) {
+                    return (d.enabled) ? d.count : 0;
+                  }));
               
-          poll.chart.path.transition()
+                  var percent = Math.round(1000 * d.data.count/total) / 10;
+                  
+                  ttip.select('.vote').html(d.data.vote);
+                  
+                  if( d.data.vote !== "No Votes") {
+                    ttip.select('.count').html(d.data.count + ' vote(s)');
+                    ttip.select('.percent').html(percent + "%");
+                  }
+                  
+                  ttip.style('display', 'block');
+              })
+              .on('mouseout', function(d) {
+                  ttip.style('display', 'none');
+              })
+              .on('mousemove', function(d) {
+                  ttip.style('top', (d3.event.layerY + 10) + 'px')
+                    .style('left', (d3.event.layerX + 10) + 'px');
+              })
+              .transition()
               .duration(500)
               .attr("fill", function(d, i) {
                   return poll.chart.color(d.data.vote);
@@ -70,32 +96,7 @@
               .each(function(d) {
                   this._current = d;
               });
-          
-          poll.chart.path.on('mouseover', function(d) {
-              var total = d3.sum(data.map(function(d) {
-                return (d.enabled) ? d.count : 0;
-              }));
-          
-              var percent = Math.round(1000 * d.data.count/total) / 10;
               
-              ttip.select('.vote').html(d.data.vote);
-              
-              if( d.data.vote !== "No Votes") {
-                ttip.select('.count').html(d.data.count + ' vote(s)');
-                ttip.select('.percent').html(percent + "%");
-              }
-              
-              ttip.style('display', 'block');
-          });
-          
-          poll.chart.path.on('mouseout', function(d) {
-              ttip.style('display', 'none');
-          });
-          
-          poll.chart.path.on('mousemove', function(d) {
-              ttip.style('top', (d3.event.layerY + 10) + 'px')
-                .style('left', (d3.event.layerX + 10) + 'px');
-          });
           
           
           poll.chart.legend = poll.chart.svg.selectAll('.legend')
@@ -170,10 +171,10 @@
         };
         
 
-        chart.addVote = function(userVote, poll ) {
+        chart.addOrRemoveVote = function(poll, newOptions, add) {
 
-            var data = poll.options;
-            console.log(data);
+            var data = newOptions;
+
             var svg = poll.chart.svg;
             var color = poll.chart.color;
             var legend = poll.chart.legend;
@@ -181,39 +182,77 @@
             var path = poll.chart.path;
             var arc = poll.chart.arc;
             var radius = poll.chart.radius;
+            var ttip = poll.chart.ttip;
             
-            //If first vote for the poll, reset the color & its domain(the votes) then remove the 'No Votes' legend
-            if( !hasVotes(data) ) {
+            if( !hasVotes(newOptions) && !add ) {
               color = d3.scale.category20();
               legend = svg.selectAll('.legend').remove();
+              data = [{vote: "No Votes", count: 1}];
+              color(data[0].vote);
             }
             
-            for( var i = 0; i < data.length; i++ ) {
+            //If first vote for the poll, reset the color & its domain(the votes) then remove the 'No Votes' legend
+            if( !hasVotes(poll.options) && add) {
+              color = d3.scale.category20();
+              legend = svg.selectAll('.legend').remove();
+              for( var i = 0; i < data.length; i++) {
                 color(data[i].vote);
-                if (data[i].vote === userVote) {
-                  if( !hasVotes(data) ) {
-                    data[i].count += 1;
-                    path.data(pie([data[i]]));
-                  }
-                  else {
-                    data[i].count += 1;
-                    path.data(pie(data));
-                  }
-                }
+              }
             }
 
-            path.transition()
-              .duration(750)
-              .attr("fill", function(d) {
-                return color(d.data.vote);
-              })
-              .attrTween('d', function(d) {
-                var interpolate = d3.interpolate(this._current, d);
-                this._current = interpolate(0);
-                return function(t) {
-                  return arc(interpolate(t));
+            console.log(data);
+            console.log(color.domain());
+            if( (!hasVotes(poll.options) && add) || ( !hasVotes(newOptions) && !add) ) {
+              svg.selectAll('path').remove();
+              path = svg.selectAll('path')
+              .data(pie(data))
+              .enter()
+              .append('path');
+              //path = path.data(pie(data));
+              console.log(path.data());
+              console.log(pie(data));
+              path
+                .transition()
+                .duration(750)
+                .attr("fill", function(d) {
+                  console.log(d);
+                
+                  return color(d.data.vote);
+                })
+                .attr('d', poll.chart.arc)
+                .each(function(d) {
+                  this._current = d;
+                });
+                path = svg.selectAll('path')
+                .data(pie(data));
+                path.exit().remove();
+            }
+            else {
+              
+              path.data(pie(data));
+
+              path
+                .transition()
+                .duration(750)
+                .attr("fill", function(d) {
+                  return color(d.data.vote);
+                })
+                .attrTween('d', function(d) {
+                  var interpolate = d3.interpolate(this._current, d);
+                  this._current = interpolate(0);
+                  return function(t) {
+                    return arc(interpolate(t));
                 };
               });
+              
+            }
+            
+            if( !hasVotes(newOptions) && !add) {
+              path = svg.selectAll('path')
+              .data(pie(data));
+              path.exit().remove();
+            }
+            
 
             legend = svg.selectAll('.legend')
                 .data(color.domain())
@@ -239,75 +278,11 @@
               .text(function(d) { return d; });
         };
         
-        chart.removeVote = function(poll) {
-          
-          var color = poll.chart.color;
-          var svg = poll.chart.svg;
-          var legend = poll.chart.legend;
-          var pie = poll.chart.pie;
-          var path = poll.chart.path;
-          var arc = poll.chart.arc;
-          var radius = poll.chart.radius;
-          
-          if(!hasVotes(poll.options)) {
-            var data = [{vote:"No Votes", count: 1}];
-            color = d3.scale.category20();
-            color(data[0].vote);
-            legend = svg.selectAll('.legend').remove();
-          }
-          else
-            data = poll.options;
-          
-          data.forEach(function(d) { d.enabled = true; });
-          
-          console.log(data);
-          
-          path.data(pie(data));
-          
-          path.transition()
-            .duration(750)
-            .attr("fill", function(d) {
-              return color(d.data.vote);
-            })
-            .attrTween('d', function(d) {
-              var interpolate = d3.interpolate(this._current, d);
-              this._current = interpolate(0);
-              return function(t) {
-                return arc(interpolate(t));
-              };
-            });
-            
-          console.log(color.domain());
-
-          legend = svg.selectAll('.legend')
-              .data(color.domain())
-              .enter()
-              .append('g')
-              .attr('class', 'legend')
-              .attr('transform', function(d, i) {
-                var height = legendRectSize + legendSpacing;
-                var vert = -radius + ( i * height);
-                var horz = radius + legendSpacing + 25;
-                return 'translate(' + horz + ',' + vert +')';
-            });
-
-            legend.append('rect')
-              .attr('width', legendRectSize)
-              .attr('height', legendRectSize)
-              .style('fill', color)
-              .style('stroke', color);
-              
-            legend.append('text')
-            .attr('x', legendRectSize + legendSpacing)
-            .attr('y', legendRectSize - legendSpacing)
-            .text(function(d) { return d; });
-          
-        };
         
         //TODO: If user votes for new option after adding, make it display
-        chart.addOption = function(newOpt, poll) {
+        chart.addOption = function(newOpt, poll, newOptions) {
 
-          if( hasVotes(poll.options) ) {
+          if( hasVotes(newOptions) ) {
             
             poll.chart.color(newOpt);
             
@@ -337,6 +312,88 @@
           }
         };
         
+        
+        chart.removeOption = function(editedOptions, poll) {
+          var color = poll.chart.color;
+          var svg = poll.chart.svg;
+          var legend = poll.chart.legend;
+          var pie = poll.chart.pie;
+          var path = poll.chart.path;
+          var arc = poll.chart.arc;
+          var radius = poll.chart.radius;
+          var data = null;
+          
+          legend = svg.selectAll('.legend').remove();
+          
+          if(!hasVotes(editedOptions)) {
+            data = [{vote:"No Votes", count: 1}];
+            color = d3.scale.category20();
+            color(data[0].vote);
+          }
+          else {
+            data = editedOptions;
+            color = d3.scale.category20();
+
+            for( var i = 0; i < editedOptions.length; i++ ) {
+              color(editedOptions[i].vote);
+            }
+          }
+          
+          data.forEach(function(d) { d.enabled = true; });
+          
+          console.log(color.domain());
+          console.log(pie(data));
+          /*path = svg.selectAll('path')
+              .data(pie(data))
+              .enter()
+              .append('path');*/
+          path.data(pie(data));
+          
+          path.transition()
+            .duration(750)
+            .attr("fill", function(d) {
+              console.log(d);
+              console.log(color(d.data.vote));
+              return color(d.data.vote);
+            })
+            .attrTween('d', function(d) {
+              var interpolate = d3.interpolate(this._current, d);
+              this._current = interpolate(0);
+              return function(t) {
+                return arc(interpolate(t));
+              };
+            });
+            
+            console.log(color.domain());
+
+          legend = svg.selectAll('.legend')
+              .data(color.domain())
+              .enter()
+              .append('g')
+              .attr('class', 'legend')
+              .attr('transform', function(d, i) {
+                var height = legendRectSize + legendSpacing;
+                var vert = -radius + ( i * height);
+                var horz = radius + legendSpacing + 25;
+                return 'translate(' + horz + ',' + vert +')';
+            });
+
+            legend.append('rect')
+              .attr('width', legendRectSize)
+              .attr('height', legendRectSize)
+              .style('fill', color)
+              .style('stroke', color);
+              
+            legend.append('text')
+            .attr('x', legendRectSize + legendSpacing)
+            .attr('y', legendRectSize - legendSpacing)
+            .text(function(d) { return d; });
+            
+        };
+
+        
         return chart;
     }]);
 })();
+
+

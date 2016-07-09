@@ -6,7 +6,10 @@ var Schema = mongoose.Schema;
 
 var voteSchema = new Schema( {
    vote: String,
-   count: Number,
+   count:  {
+       type: Number,
+       min: 0
+   },
    addedBy: String
 });
 

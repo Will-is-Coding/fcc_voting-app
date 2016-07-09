@@ -45,7 +45,7 @@ module.exports = function (app, passport) {
 	
 	var requireAuth = function (req, res, next) {
 		if ( !req.token && !req.isLoggedIn ) {
-			res.status(401).json({message: "Not authorized", success: false});
+			res.status(401).json({message: "Not authorized", success: false, submitted: false});
 		} else {
 			next();
 		}
@@ -332,7 +332,7 @@ module.exports = function (app, passport) {
 						if( poll === null )
 							res.status(200).json({submitted: false, message: "You already voted!" });
 						else {
-							res.status(200).json({submitted: true, message: "Vote has been submitted.", voted: req.body.vote});
+							res.status(200).json({submitted: true, message: "Vote has been submitted.", voted: req.body.vote, options: poll.options});
 						}
 					});
 			}
@@ -361,7 +361,7 @@ module.exports = function (app, passport) {
 						if( poll === null )
 							res.status(200).json({submitted: false, message: "You already voted!" });
 						else
-							res.status(200).json({submitted: true, message: "Vote has been submitted.", voted: req.body.vote});
+							res.status(200).json({submitted: true, message: "Vote has been submitted.", voted: req.body.vote, options: poll.options});
 					});
 			}
 		})
@@ -431,7 +431,12 @@ module.exports = function (app, passport) {
 		
 	
 			
-	/** Adds an option to a poll **/
+	/**
+	 * ROUTES:
+	 *		PUT: Adds an option to a poll
+	 *		DELETE: Delete users' vote from poll
+	 *
+	 */
 	//TODO: Middleware check if option is not already in poll
 	app.route('/api/poll/:id/:option')
 		.put(requireAuth, function(req, res) {
@@ -465,6 +470,33 @@ module.exports = function (app, passport) {
 			}
 			else
 				res.status(200).json({message: "Not a valid option", submitted: false});
+		})
+		.delete(requireAuth, function(req, res) {
+			console.log(req.params.option);
+			Poll.findOneAndUpdate({ _id: req.params.id, "options.addedBy": req.username, "options._id": req.params.option },
+			{
+				$pull: {
+					options: {
+						_id: req.params.option,
+						addedBy: req.username
+					},
+					voters: {
+						votedFor_id: req.params.option
+					}
+				}
+			}, {new: true},
+			function(err, poll) {
+				if( err ) {
+					res.status(200).json({error: err, submitted: false});
+					throw err;
+				}
+				if( poll ) {
+					console.log(poll.options);
+					res.status(200).json({message: "Succesfully removed your option", submitted: true, options: poll.options, voters: poll.voters});
+				}
+				else
+					res.status(200).json({message: "Option not found or not the creator", submitted: false});
+			});
 		});
 	
 	/**
@@ -472,8 +504,10 @@ module.exports = function (app, passport) {
 	 *		DELETE: Delete users' vote from poll
 	 *
 	 */
+	 //TODO: Make sure the 
 	app.route('/api/poll/:id/remove_vote/:option')
 		.delete(requireAuth, function(req, res) {
+			
 			Poll.findOneAndUpdate( {_id: req.params.id, "options._id" : req.params.option },
 				{
 					$inc: {

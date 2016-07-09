@@ -19,6 +19,8 @@
                 $scope.loggedIn = loggedIn;
                 $scope.username = username;
             }
+            console.log($scope.loggedIn);
+            console.log('here');
         };
         pollService.fetchAllPolls(getAllPolls);
         
@@ -32,6 +34,7 @@
         };
         
         var handleVoteResponse = function(error, response) {
+            
             if ( response && !error ) {
                 $scope.allPolls[tempPollIndex].voteMessage.message = response.emssage;
                 if( !response.submitted ) {
@@ -40,6 +43,8 @@
                 else {
                     $scope.allPolls[tempPollIndex].alreadyVoted = true;
                     $scope.allPolls[tempPollIndex].userVotedFor = votedFor;
+                    $scope.allPolls[tempPollIndex].options = response.options;
+                    $scope.allPolls[tempPollIndex].userVote = $scope.allPolls[tempPollIndex].options[0];
                     console.log($scope.allPolls[tempPollIndex]);
                 }
             }
@@ -55,6 +60,7 @@
             votedFor = poll.userVote._id;
             console.log(poll.userVote);
             if( poll.userVote ) {
+                
                 pollService.submitVote(poll.userVote.vote, poll, poll.userVote._id, handleVoteResponse);
             }
             else {
@@ -85,6 +91,7 @@
         $scope.removeVote = function(poll, index) {
             console.log(poll);
             tempPollIndex = index;
+            console.log(poll.userVotedFor);
             pollService.removeVote(poll, handleRemoveVote);  
         };
         
@@ -118,13 +125,18 @@
             if( response.submitted ) {
                 $scope.allPolls[tempPollIndex].options = response.options;
                 $scope.allPolls[tempPollIndex].userVote = $scope.allPolls[tempPollIndex].options[0];
-                $scope.userNewOption.text = "";
+                //$scope.allPolls[tempPollIndex].userNewOption.text = "";
+                $scope.allPolls[tempPollIndex].alreadyAdded = true;
+                $scope.allPolls[tempPollIndex].userAddedOptionID = $scope.allPolls[tempPollIndex].options[response.options.length - 1]._id;
+                
+                
             }
 
         };
         
         $scope.addOption = function(newOpt, poll, pollIndex) {
             if( newOpt ) {
+                console.log(newOpt);
                 tempPollIndex = pollIndex;
                 pollService.addOption(newOpt, poll, "#chart-" + pollIndex, handleAddOptionResponse);
             }
@@ -133,6 +145,36 @@
                 poll.addOptResponse.submitted = false;
                 poll.addError = true;
             }
+        };
+        
+        var handleRemoveOptionResponse = function(error, response) {
+            console.log(response);
+            if( error )
+                throw error;
+                
+            if( response.error ) 
+                throw response.error;
+                
+            $scope.allPolls[tempPollIndex].removeOptResponse = {success: response.submitted, message: response.message};
+            
+            if( response.submitted ) {
+                $scope.allPolls[tempPollIndex].options = response.options;
+                $scope.allPolls[tempPollIndex].voters = response.voters;
+                //remove alreadyVoted & votedFor from voters
+                $scope.allPolls[tempPollIndex].userVote = $scope.allPolls[tempPollIndex].options[0];
+                $scope.allPolls[tempPollIndex].alreadyAdded = false;
+            }
+        };
+        
+        $scope.removeOption = function(poll, pollIndex) {
+            console.log(poll);
+              if( poll.userAddedOptionID && poll.options.length > 2 && poll.alreadyAdded ) {
+                    tempPollIndex = pollIndex;
+                    var userAddedOptionVote = poll.options.findIndex( option => option._id === poll.userAddedOptionID );
+                    userAddedOptionVote = poll.options[userAddedOptionVote].vote;
+                    
+                    pollService.removeOption(poll, handleRemoveOptionResponse);
+              }
         };
         
     }]);
