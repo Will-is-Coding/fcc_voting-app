@@ -118,6 +118,8 @@
         var handleAddOptionResponse = function(error, response) {
             if( error ) 
                 throw error;
+            if( response.error )
+                throw response.error;
                 
             console.log(response);
             $scope.allPolls[tempPollIndex].addOptResponse = {success: response.submitted, message: response.message};

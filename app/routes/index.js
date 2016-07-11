@@ -1,4 +1,5 @@
 'use strict';
+//TODO: CLEANUP AND REFACTOR
 
 var path = process.cwd();
 var bodyparser = require('body-parser');
@@ -612,18 +613,7 @@ module.exports = function (app, passport) {
 	
 	app.get('/api/deletevotes/:id', function(req, res) {
 		
-		Poll.findById(req.params.id, function(err, poll) {
-			
-			if( poll ) {
-				var optionsToReturn = [ {vote: "A", count: 0}, {vote:"B", count: 0}];
-				
-				poll.update({}, { $set: { "options.$.count": 0 }}, function(err, raw) {
-					res.status(200).json(poll);
-				});
-			}
-			else
-				res.status(200).json({message: "Nope"});
-		});
+		Poll.findByIdAndUpdate(req.params.id, { "options.count": { }});
 	});
 	
 	app.get('/api/testing', function(req, res) {

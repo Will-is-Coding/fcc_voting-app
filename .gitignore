@@ -2,3 +2,5 @@ node_modules/
 .eslintrc
 .env
 config.js
+
+app/controllers/truePollController.js

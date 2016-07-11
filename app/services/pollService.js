@@ -153,10 +153,8 @@
         this.fetchPoll = function(pollID, handlePoll) {
             $http({ method: 'GET', url: '/api/poll/' + pollID })
                 .then( function successCB(response) {
-                    console.log(response);
-                    that.poll = response.data;
-                    setupPolls(response.data);
-                    handlePoll(null, response.data);
+                    setupPolls([response.data]);
+                    handlePoll(null, response.data, that.username, that.userLoggedIn);
                 }, function errorCB(error) {
                     if(error)
                         console.log(error);

@@ -6,46 +6,33 @@
         $scope.addMessage = "";
         $scope.addError = false;
         
-        var tempOptIndex = "";
         var chartID = "#single-chart";
-        var addedVote = "";
+        var votedFor = "";
         
-        function setupPoll(err, poll) {
-            $scope.poll = poll;
-            $scope.poll.totalVotes = pollService.totalVotes($scope.poll);
-            $scope.poll.url = 'https://fcc-voting-app-will-is-coding.c9users.io/#/poll/' + poll._id;
-            $scope.userVote = $scope.poll.options[0];
-            $scope.poll.submitted = false;
             
-            var hasVoted = $scope.poll.voters.findIndex( voter => voter.username === $scope.username );
-            if( hasVoted !== -1 )
-                $scope.poll.alreadyVoted = true;
-            else
-                $scope.poll.alreadyVoted = false;
-                
-            pollService.buildChart($scope.poll.options, chartID, poll);
-        }
-        pollService.fetchPoll($routeParams.id, setupPoll);
-        
-        function checkUserStatus(error, username) {
-            if(error)
+        var getPoll = function(error, poll, username, loggedIn) {
+            if( error )
                 throw error;
-            else if( username !== '' ) {
-                $scope.loggedIn = true;
-                $scope.username = username;
-            }
-        }
-        userService.getUsername(checkUserStatus);
+            
+            $scope.poll = poll;
+            pollService.buildChart(poll, chartID);
+            $scope.loggedIn = loggedIn;
+            $scope.username = username;
+        };
+        pollService.fetchPoll($routeParams.id, getPoll);
+        
         
         var handleVoteResponse = function(error, response) {
             if ( response && !error ) {
                 $scope.voteMessage = response;
-                if( response.submitted ) {
-                    $scope.poll.options[tempOptIndex].count += 0;
-                    //update Poll's chart
+                if( !response.submitted ) {
+                    $scope.poll.voteMessage.error = true;
                 }
                 else {
-                    $scope.voteMessage.error = true;
+                    $scope.poll.alreadyVoted = true;
+                    $scope.poll.userVotedFor = votedFor;
+                    $scope.poll.options = response.options;
+                    $scope.poll.userVote = $scope.poll.options[0];
                 }
             }
             else {
@@ -55,31 +42,103 @@
             }
         };
         
-        $scope.vote = function(poll) {
-            tempOptIndex = poll.options.findIndex( option => option._id === $scope.userVote._id );
-            pollService.submitVote($scope.userVote.vote, poll, $scope.userVote._id, handleVoteResponse);
+        $scope.vote = function() {
+            votedFor = $scope.userVote._id;
+            if( $scope.poll.userVote )
+                pollService.submitVote($scope.userVote.vote, $scope.poll, $scope.userVote._id, handleVoteResponse);
+            else {
+                $scope.poll.voteMessage.error = true;
+                $scope.poll.voteMessage.submitted = false;
+                $scope.poll.voteMessage.message = "Vote value was not valid";
+            }
         };
+        
+        
+        var handleRemoveVote = function(err, response) {
+            console.log(response);
+            if(err) {
+                throw err;
+            }
+            if( response.err ) {
+                throw response.err;
+            }
+            $scope.poll.voteMessage = { submitted: response.submitted, message: response.message, error: !response.submitted };
+            if( response.submitted ) {
+                $scope.poll.options = response.options;
+                $scope.poll.alreadyVoted = false;
+                $scope.poll.userVote = $scope.poll.options[0];
+                $scope.poll.voteMessage.submitted = false;
+                $scope.poll.voteMessage.removed = true;
+            }
+        };
+        
+        $scope.removeVote = function(poll, index) {
+            console.log(poll.userVotedFor);
+            pollService.removeVote(poll, handleRemoveVote);  
+        };
+        
         
         var handleAddOptionResponse = function(error, response) {
             if( error ) {
                 $scope.addError = true;
                 throw error;
             }
-            
+            if( response.err ) {
+                $scope.addError = true;
+                throw response.err;
+            }
+            $scope.poll.voteMessage = { submitted: response.submitted, message: response.message, error: !response.submitted };
             if( response.submitted ) {
                 $scope.addError = false;
-                $scope.poll.options.push({vote: addedVote, count: 0});
+                $scope.poll.options = response.options;
+                $scope.poll.userVote = $scope.poll.options[0];
+                $scope.poll.alreadyAdded = true;
+                $scope.poll.userAddedOptionID = $scope.poll.options[response.options.length - 1]._id;
             }
             else {
                 $scope.addError = true;
             }
-            
-            $scope.addMessage = response.message;
         };
         
         $scope.addOption = function(newOpt, poll) {
-            addedVote = newOpt;
-            pollService.addOption(newOpt, poll, handleAddOptionResponse);
+            if(newOpt) {
+                pollService.addOption(newOpt, poll, handleAddOptionResponse);
+            }
+            else {
+                $scope.poll.addOptResponse.message = "Option must be at least one character long";
+                $scope.poll.addOptResponse.submitted = false;
+                $scope.addError = true;
+            }
+        };
+        
+        
+        var handleRemoveOptionResponse = function(error, response) {
+            console.log(response);
+            if( error )
+                throw error;
+                
+            if( response.error ) 
+                throw response.error;
+                
+            $scope.poll.removeOptResponse = {success: response.submitted, message: response.message};
+            
+            if( response.submitted ) {
+                $scope.poll.options = response.options;
+                $scope.poll.voters = response.voters;
+                //remove alreadyVoted & votedFor from voters
+                $scope.poll.userVote = $scope.poll.options[0];
+                $scope.poll.alreadyAdded = false;
+            }
+        };
+        
+        $scope.removeOption = function() {
+
+              if( $scope.poll.userAddedOptionID && $scope.poll.options.length > 2 && $scope.poll.alreadyAdded ) {
+                    var userAddedOptionVote = $scope.poll.options.findIndex( option => option._id === $scope.poll.userAddedOptionID );
+                    userAddedOptionVote = $scope.poll.options[userAddedOptionVote].vote;
+                    
+                    pollService.removeOption($scope.poll, handleRemoveOptionResponse);
+              }
         };
     
     }]);
