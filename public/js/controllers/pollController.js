@@ -5,24 +5,31 @@
         $scope.voteMessage = "";
         $scope.addMessage = "";
         $scope.addError = false;
-        
-        var chartID = "#single-chart";
+        $scope.allPolls = null;
+        $scope.chartID = "#single-chart";
         var votedFor = "";
         
-            
+        var test = true;
+        
+        $scope.isSingle = true;
         var getPoll = function(error, poll, username, loggedIn) {
             if( error )
                 throw error;
             
+            //$scope.poll = poll;
             $scope.poll = poll;
-            pollService.buildChart(poll, chartID);
+            //console.log($scope.allPolls);
+            //pollService.buildChart(poll, chartID);
             $scope.loggedIn = loggedIn;
             $scope.username = username;
         };
         pollService.fetchPoll($routeParams.id, getPoll);
         
+        /*$scope.makeChart = function() {
+            pollService.fetchPoll($routeParams.id, getPoll);
+        };*/
         
-        var handleVoteResponse = function(error, response) {
+        /*var handleVoteResponse = function(error, response) {
             if ( response && !error ) {
                 $scope.voteMessage = response;
                 if( !response.submitted ) {
@@ -139,7 +146,8 @@
                     
                     pollService.removeOption($scope.poll, handleRemoveOptionResponse);
               }
-        };
+        };*/
+        
     
     }]);
 })();

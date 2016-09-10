@@ -1,23 +1,29 @@
 <script type="text/ng-template" id="group-template.html">
     <div class="panel {{panelClass || 'panel-default'}}">
-      <div class="panel-heading" ng-click="toggleOpen(); isopen = !isopen;">
+      <div class="panel-heading" ng-click="isopen = !isopen;">
         <h4 class="panel-title">
           <a href tabindex="0" class="accordion-toggle" uib-accordion-transclude="heading">
             <span uib-accordion-header ng-class="{'text-muted': isDisabled}">
-              {{heading}} {{$scope.chartWidthRatio}}
+              <div class="responsive-title">
+              {{heading}}
+              </div>
               <i class="pull-right glyphicon" ng-class="{ 'glyphicon-chevron-down': isopen, 'glyphicon-chevron-right': !isopen }"></i>
             </span>
           </a>
         </h4>
       </div>
-      <div class="panel-collapse collapse" uib-collapse="!isopen">
+      <div class="panel-collapse collapse" uib-collapse="!isopen" ng-click="$event.stopPropagation()">
         <div class="panel-body" style="text-align: right" ng-transclude></div>
       </div>
     </div>
 </script>
 <div class="row">
-	<uib-accordion close-others="oneAtATime">
-		<uib-accordion-group heading="{{poll.question}}" ng-repeat="poll in allPolls" ng-click="displayPoll(poll, '#chart-' + $index)" template-url="group-template.html">
+	<uib-accordion close-others="true">
+		<uib-accordion-group heading="{{poll.question}}" id="{{'poll-' + $index}}" 
+		ng-repeat="poll in allPolls" 
+		ng-click="displayPoll(poll, '#chart-' + $index, $index);" 
+		template-url="group-template.html" >
+			
 			<div class="row poll-information">
 				<div class="poll-creator col-lg-4 col-md-4 col-sm-4 col-xs-4">
 					<h4 class="pull-left">Created by {{poll.creator.name}}</h4>
@@ -26,7 +32,7 @@
 	                <h4>with {{poll.totalVotes}} Vote(s)</h4>
 	            </div>
 	            <div class="poll-date col-lg-4 col-md-4 col-sm-4 col-xs-4">
-	                <h4 class="pull-right">on {{poll.creationDate.human}}</h4>
+	                <h4 class="pull-right">On {{poll.creationDate.human}}</h4>
 	            </div>
 			</div>
 			<div class="row">
@@ -40,10 +46,15 @@
 								<h4>Results</h4>
 							</div>
 						</div>
-						<div class="row row-centered">
+						<!--<div class="row row-centered">
 							<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 col-centered" ng-repeat="option in poll.options">
 								<b>{{option.vote}}: </b> <span>{{option.count}}</span>
 							</div>
+						</div>-->
+						<div class="row result-options">
+							<ul class="list-inline">
+								<li ng-repeat="option in poll.options"><b>{{option.vote}}</b>: {{option.count}}</li>
+							</ul>
 						</div>
 					</div>
 					
@@ -62,6 +73,7 @@
 							<span class="help-block" ng-show="!poll.voteMessage.submitted && poll.voteMessage.error">{{poll.voteMessage.message}}</span>
 							<span class="help-block" ng-show="poll.voteMessage.removed">{{poll.voteMessage.message}}</span>
 						</div>
+						
 						<button type="submit" class="btn" ng-class="{ 'btn-primary': !poll.voteMessage.submitted && !poll.voteMessage.error && !poll.alreadyVoted,
 						'btn-danger': !poll.voteMessage.submitted && (poll.voteMessage.error || poll.alreadyVoted) }" ng-disabled="poll.alreadyVoted || poll.voteMessage.submitted">Vote</button>
 						<button type="button" class="btn btn-primary" ng-show="poll.alreadyVoted && loggedIn" ng-click="removeVote(poll, $index)">Remove My Vote</button>
@@ -74,9 +86,10 @@
 							
 							<label for="newOption" class="pull-left">New Option</label>
 							<input 
-							id="newOption" name="newOption" ng-model="userNewOption.text" ng-init="userNewOption.unique = true"
+							id="newOption" name="newOption" 
+							ng-model="userNewOption.text" ng-init="userNewOption.unique = true"
 							class="form-control"
-							ng-change="checkIfUnique(userNewOption, $index)"
+							ng-change="checkIfUnique(userNewOption, $index, false)"
 							placeholder="{{createPlaceholder(poll)}}" 
 							ng-minlength="1" 
 							ng-maxlength="50"
@@ -92,13 +105,13 @@
 							<span ng-show="addOptForm.newOption.$error.maxlength" class="help-block">A valid option must be between 1 and 50 characters</span>
 							<span ng-show="addOptForm.newOption.$dirty && !userNewOption.unique" class="help-block">This option is already available</span>
 							<span ng-show="poll.addOptResponse.submitted" class="help-block">{{poll.addOptResponse.message}}</span>
-							<span ng-show="!poll.addOptResponse.submitted" class="help-block">{{poll.addOptResponse.message}}</span>
+							<span ng-show="displayMessage( userNewOption.text, poll, 'removeOptResponse' )" class="help-block">{{poll.removeOptResponse.message}}</span>
 							<span ng-show="poll.addError" class="help-block">{{poll.addOptResponse.message}}</span>
 						</div>
 						<button type="submit" class="btn"
-						ng-class="{ 'btn-primary': addOptForm.newOption.$valid && userNewOption.text && userNewOption.unique,
-						'btn-danger': ((addOptForm.newOption.$error.maxlength || !userNewOption.unique || poll.addError) && userNewOption.text) || poll.alreadyAdded || !loggedIn }"
-						ng-disabled="!loggedIn || addOptForm.$invalid || !userNewOption.unique || poll.alreadyAdded">Add</button>
+							ng-class="{ 'btn-primary': addOptForm.newOption.$valid && userNewOption.text && userNewOption.unique,
+							'btn-danger': ((addOptForm.newOption.$error.maxlength || !userNewOption.unique || poll.addError) && userNewOption.text) || poll.alreadyAdded || !loggedIn }"
+							ng-disabled="!loggedIn || addOptForm.$invalid || !userNewOption.unique || poll.alreadyAdded">Add</button>
 						<button type="button" class="btn btn-primary" ng-show="poll.alreadyAdded && loggedIn" ng-click="removeOption(poll, $index)">Remove My Option</button>
 					</form>
 				</div>
@@ -111,7 +124,8 @@
 					<div class="input-group pull-right">
 						<input id="poll-link" type="text" class="form-control" value="{{poll.url}}" select-on-click readonly>
 						<span class="input-group-btn">
-							<button class="btn btn-secondary btn-info" type="button" ngclipboard data-clipboard-text="{{poll.url}}">Share</button>
+							<button class="btn btn-secondary btn-info share" type="button" ngclipboard data-clipboard-text="{{poll.url}}"
+							popover-animation="true" uib-popover="Copied!" popover-trigger="outsideClick">Share</button>
 						</span>
 					</div>
 				</div>

@@ -1,5 +1,5 @@
 <div id="single-main" class="row" >
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 page-heading">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 page-heading single-heading">
         <h3>{{ poll.question }}</h3>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 poll-information">
@@ -7,7 +7,7 @@
             <h4>Created By {{ poll.creator.name }}</h4>
         </div>
         <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
-            <h4>With {{ poll.totalVotes }} Votes</h4>
+            <h4>With {{ poll.totalVotes }} Vote(s)</h4>
         </div>
         <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
             <h4>On {{ poll.creationDate.human }}</h4>
@@ -32,42 +32,59 @@
 			</div>
 			<form name="voteForm" ng-submit="vote(poll)" class="single-poll-form" novalidate>
 				<div class="form-group has-feedback"
-				ng-class="{'has-success': voteMessage.submitted && !voteMessage.error, 'has-error': !voteMessage.submitted && voteMessage.error }">
+				ng-class="{'has-success': (poll.voteMessage.submitted || poll.voteMessage.removed) && !poll.voteMessage.error, 'has-error': (!poll.voteMessage.submitted) && (poll.voteMessage.error || poll.alreadyVoted) }">
 					<label for="voteOption" class="pull-left">Your Vote</label>
 					<select class="form-control" id="voteOption" name="voteOption" 
-					ng-model="userVote" 
+					ng-model="poll.userVote" 
 					ng-disabled="poll.alreadyVoted" 
 					ng-options="option.vote for option in poll.options"></select>
+					
 					<span class="help-block" ng-show="poll.alreadyVoted">You've already voted on this poll</span>
-					<span class="help-block" ng-show="voteMessage.submitted">{{voteMessage.message}}</span>
-					<span class="help-block" ng-show="!voteMessage.submitted && voteMessage.error">{{voteMessage.message}}</span>
-				
+					<span class="help-block" ng-show="poll.voteMessage.submitted">{{poll.voteMessage.message}}</span>
+					<span class="help-block" ng-show="!poll.voteMessage.submitted && poll.voteMessage.error">{{poll.voteMessage.message}}</span>
+					<span class="help-block" ng-show="poll.voteMessage.removed">{{poll.voteMessage.message}}</span>
 				</div>
-				<button type="submit" class="btn btn-primary" ng-disabled="poll.alreadyVoted || voteMessage.submitted">Vote</button>
-			</form>
-			<!-- TODO: Form verification with feedback -->
-			<form name="addOptForm" ng-submit="addOption(userNewOption, poll)" class="single-poll-form" novalidate>
-				<div class="form-group has-feedback" ng-class="{ 'has-error' : (addOptForm.newOption.$error.minlength || addOptForm.newOption.$invalid) && !addOptForm.newOption.$pristine || addError, 'has-success' : addOptForm.newOption.$valid && !addOptForm.newOption.$pristine && !addError}">
+				
+				<button type="submit" class="btn" ng-class="{ 'btn-primary': !poll.voteMessage.submitted && !poll.voteMessage.error && !poll.alreadyVoted,
+				'btn-danger': !poll.voteMessage.submitted && (poll.voteMessage.error || poll.alreadyVoted) }" ng-disabled="poll.alreadyVoted || poll.voteMessage.submitted">Vote</button>
+				<button type="button" class="btn btn-primary" ng-show="poll.alreadyVoted && loggedIn" ng-click="removeVote(poll, $index)">Remove My Vote</button>
+			</form> 
+			
+			<form name="addOptForm" ng-submit="addOption(userNewOption.text, poll)" class="single-poll-form" novalidate>
+				<div class="form-group has-feedback"
+						ng-class="{ 'has-error' : (addOptForm.newOption.$error.maxlength || !userNewOption.unique || poll.addError), 
+						'has-success' : addOptForm.newOption.$valid && userNewOption.text && userNewOption.unique }">
+					
 					<label for="newOption" class="pull-left">New Option</label>
 					<input 
-					id="newOption" name="newOption" ng-model="userNewOption" 
+					id="newOption" name="newOption"
+					ng-model="userNewOption.text" ng-init="userNewOption.unique = true"
+					ng-change="checkIfUnique(userNewOption, $index, true)"
 					class="form-control"
 					ng-class=""
-					placeholder="{{loggedIn === true ? 'Add an Option' : 'You Must Be Signed In'}}" 
-					ng-minlength="1" 
+					placeholder="{{createPlaceholder(poll)}}"  
+					ng-minlength="1"
+					ng-maxlength="50"
 					aria-describedby="" 
-					ng-disabled="{{loggedIn === false}}" 
+					ng-disabled="!loggedIn || poll.alreadyAdded" 
 					required>
-					<span class="glyphicon form-control-feedback"
-					ng-class="{{(addOptForm.newOption.$error.minlength || addOptForm.newOption.$invalid) && !addOptForm.newOption.$pristine ? 'glyphicon-remove' : 'glyphicon-ok'}}" 
-					aria-hidden="true"></span>
-					<span id="inputSuccess2Status" class="sr-only">(success)</span>
-					<span ng-show="addError" class="help-block">{{addMessage}}</span>
-					<span ng-show="!addError" class="help-block">{{addMessage}}</span>
-					<span ng-show="addOptForm.newOption.$invalid && addOptForm.newOption.$dirty" class="help-block">It must be at least 1 character long</p>
 					
+					<span class="glyphicon form-control-feedback"
+							ng-class="{ 'glyphicon-remove glyph-red': (addOptForm.newOption.$invalid || !userNewOption.unique) && userNewOption.text, 'glyphicon-ok glyph-green': addOptForm.newOption.$valid && userNewOption.text && userNewOption.unique }"
+							aria-hidden="true"></span>
+					<span id="inputSuccess2Status" class="sr-only">(success)</span>
+					
+					<span ng-show="addOptForm.newOption.$error.maxlength" class="help-block">A valid option must be between 1 and 50 characters</span>
+					<span ng-show="addOptForm.newOption.$dirty && !userNewOption.unique" class="help-block">This option is already available</span>
+					<span ng-show="poll.addOptResponse.submitted" class="help-block">{{poll.addOptResponse.message}}</span>
+					<span ng-show="poll.removeOptResponse.submitted" class="help-block">{{poll.removeOptResponse.message}}</span>
+					<span ng-show="poll.addError" class="help-block">{{poll.addOptResponse.message}}</span>
 				</div>
-				<button type="submit" class="btn btn-primary pull-right" ng-disabled="{{!loggedIn || addOptForm.$invalid}}">Add</button>
+					<button type="submit" class="btn"
+						ng-class="{ 'btn-primary': addOptForm.newOption.$valid && userNewOption.text && userNewOption.unique,
+						'btn-danger': ((addOptForm.newOption.$error.maxlength || !userNewOption.unique || poll.addError) && userNewOption.text) || poll.alreadyAdded || !loggedIn }"
+						ng-disabled="!loggedIn || addOptForm.$invalid || !userNewOption.unique || poll.alreadyAdded">Add</button>
+					<button type="button" class="btn btn-primary" ng-show="poll.alreadyAdded && loggedIn" ng-click="removeOption(poll, $index)">Remove My Option</button>
 			</form>
 		</div>
 	</div>
@@ -79,9 +96,33 @@
 			<div class="input-group pull-right">
 				<input id="poll-link" type="text" class="form-control" value="{{poll.url}}" select-on-click readonly>
 				<span class="input-group-btn">
-					<button class="btn btn-secondary btn-success" type="button" ngclipboard data-clipboard-text="{{poll.url}}">Share</button>
+					<button class="btn btn-secondary btn-info share" type="button" ngclipboard data-clipboard-text="{{poll.url}}"
+							popover-animation="true" uib-popover="Copied!" popover-trigger="click outsideClick">Share</button>
 				</span>
 			</div>
 		</div>
 	</div>
-</div>
+</div> 
+
+<!--<script type="text/ng-template" id="group-template.html">
+    <div class="panel {{panelClass || 'panel-default'}}">
+      <div class="panel-heading" ng-click="toggleOpen();">
+        <h4 class="panel-title">
+          <a href tabindex="0" class="accordion-toggle" uib-accordion-transclude="heading">
+            <span uib-accordion-header ng-class="{'text-muted': isDisabled}">
+              {{heading}}
+              <i class="pull-right glyphicon" ng-class="{ 'glyphicon-chevron-down': isopen, 'glyphicon-chevron-right': !isopen }"></i>
+            </span>
+          </a>
+        </h4>
+      </div>
+      <div class="panel-collapse collapse" uib-collapse="false">
+        <div class="panel-body" style="text-align: right" ng-transclude><div id="testchart"></div></div>
+      </div>
+    </div>
+</script>
+<div class="row">
+	<uib-accordion>
+		<all-polls></all-polls>
+	</uib-accordion>
+</div> -->

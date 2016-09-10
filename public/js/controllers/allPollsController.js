@@ -1,12 +1,10 @@
 'use strict';
 (function() {
-    //Use angular router?
+    
     angular.module('VotingApp').controller('AllPollsController', ['$http', '$log', '$scope', 'pollService', function($http, $log, $scope, pollService) {
         $scope.allPolls = [];
         $scope.loggedIn = false;
         $scope.username = "";
-        $scope.userNewOption = "";
-        $scope.voteMessages = [];
         var votedFor = '';
         
         var tempPollIndex = null;

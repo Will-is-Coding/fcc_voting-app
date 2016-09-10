@@ -1,7 +1,7 @@
 'use strict';
 
 var express = require('express');
-var routes = require('./app/routes/index.js');
+var routes = require('./app/router/index.js');
 var path = require('path');
 var mongoose = require('mongoose');
 var passport = require('passport');
@@ -67,7 +67,7 @@ app.use('/factories', express.static(process.cwd() + '/app/factories'));
     return res.status(code).json(msg);
 });*/
 
-routes(app, passport);
+routes(app);
 
 var port = process.env.PORT || 8080;
 app.listen(port,  function () {

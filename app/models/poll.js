@@ -32,8 +32,8 @@ var pollSchema = new Schema( {
         unix: String,
         human: String
     },
-    live: Boolean,
-    secret: Boolean
+    draft: Boolean,
+    hidden: Boolean
 });
 
 // pollSchema.methods.userValidation = function() {} ?

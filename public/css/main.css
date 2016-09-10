@@ -124,6 +124,11 @@ header ul > li {
 }
 
 /** Index Poll Area **/
+
+.poll-heading:hover > .panel-title > a > span {
+  color: red !important;
+}
+
 .poll-area {
 	height: 100%;
 }
@@ -152,7 +157,9 @@ header ul > li {
   background-color: #06467F;
 }
 
-/* Accordion */
+/**************
+    Accordion
+***************/
 .panel-group {
   margin-bottom: 0px !important;
 }
@@ -180,6 +187,7 @@ header ul > li {
   border-radius: 0 0 !important;
   border-bottom: 1px solid #fff !important;
   cursor: pointer;
+  height: 45px;
 }
 
 .panel-heading h4 > a {
@@ -208,7 +216,79 @@ header ul > li {
   margin-bottom: 5px;
 }
 
-/** Charts **/
+.share-tooltip {
+  position: absolute;
+  bottom: 125%;
+  right: 4%;
+  background-color: #ff7f0e;
+  color: white;
+  padding: 5px 2px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.share-tooltip::after {
+  content: "";
+  position: absolute;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #ff7f0e transparent transparent transparent;
+  top: 100%;
+  right: 35%;
+}
+
+
+.panel-title {
+  position: relative;
+}
+
+.panel-heading > .panel-title > a:hover {
+  text-decoration: none;
+}
+
+.panel-heading > .panel-title > a > span > .responsive-title {
+    transition: all 1s ease;
+    position: absolute;
+    left: 0;
+    max-height: 30px;
+    overflow: hidden;
+}
+
+.panel-heading:hover > .panel-title > a > span > .responsive-title  {
+    /*left: 50%;
+    transform: translateX(-50%);*/
+}
+
+.panel-heading {
+  -webkit-transition: background-color 1s ease;
+  overflow: hidden;
+}
+
+.panel-heading:hover {
+  background-color: #ff7f0e !important;
+}
+
+.active-poll {
+ background-color: #ff7f0e !important;
+}
+
+.active-poll > .panel-title > a > span > .responsive-title {
+  /*left: 50%;
+  transform: translateX(-50%);*/
+}
+
+.result-options {
+  text-align: left;
+}
+
+.result-options > ul li {
+  padding-right: 10px !important;
+  padding-bottom: 10px;
+}
+
+/*************
+    Charts 
+*************/
 svg {
   display: block;
   margin: auto;
@@ -265,11 +345,14 @@ rect.disabled {
   position: absolute;
   text-align: center;
   top: 95px;
-  width: 80px;
+  /*width: 80px;*/
   z-index: 9999;
 }
 
-/** User's Polls **/
+
+/******************
+    User Polls
+*******************/
 #poll-manage {
   margin-top: 20px;
 }
@@ -278,18 +361,22 @@ rect.disabled {
   padding: 15px 0;
 }
 
+.change-btn {
+  margin-top: 15px;
+}
+
 /******************
     New Poll 
 *******************/
 #new-poll-title {
   background-color: #06467f;
   color: #fff;
-  height: 50px;
+  /*height: 50px;*/
   z-index: 0;
 }
 
 #new-poll-title > h3 {
-  line-height: 50px;
+  line-height: 45px;
   padding: 0 0;
   margin: 0 0;
 }
@@ -310,12 +397,10 @@ rect.disabled {
   padding-left: 10px;
 }
 
-/** Singe Poll **/
-#poll-question {
-  background-color: #06467f;
-  color: #fff;
-  line-height: 56px;
-}
+
+/******************
+     Single Poll
+******************/
 
 .single-poll-form {
   text-align: right;
@@ -324,6 +409,10 @@ rect.disabled {
 .legend-share-info {
   padding: 15px 0;
 }
+.single-heading {
+  background-color: #ff7f0e !important;
+  text-align: center;
+}
 
 /******************
      Sign Up
@@ -331,18 +420,59 @@ rect.disabled {
 .page-heading {
   background-color: #06467f;
   color: #fff;
-  height: 50px;
+  height: 45px;
   z-index: 0;
 }
 
 .page-heading > h3 {
-  line-height: 50px;
+  line-height: 45px;
   padding: 0 0;
   margin: 0 0;
 }
 
 .sign-form-wrapper {
   padding: 15px 0;
+}
+
+/******************
+     About
+******************/
+#about {
+  min-height: 600px;
+  padding-top: 25px;
+}
+
+.about-block {
+  background-color: white;
+}
+
+.block-photo {
+}
+
+.block-photo img {
+  width: 100%;
+  max-height: 300px;
+  max-width: 300px;
+}
+
+.block-info {
+  padding-top: 10px;
+}
+
+#about-project-header {
+  border-top: 1px solid orange;
+  border-bottom: 1px solid orange;
+  margin-top: 20px;
+  height: 45px;
+}
+
+#about-project-header span {
+  line-height: 45px;
+  font-size: 24px;
+}
+
+#about-project {
+  padding-top: 15px;
 }
 
 /**User Page DEPRECATED**/

@@ -40,7 +40,7 @@
         
         $scope.attemptSignup = function(newUser) {
             console.log(newUser);
-            $http({ method: 'POST', url: 'api/signup', data: JSON.stringify(newUser) })
+            $http({ method: 'PUT', url: 'api/user/signup', data: JSON.stringify(newUser) })
                 .then( function successCB(response) {
                     console.log(response);
                     if( response.data.success ) {

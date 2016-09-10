@@ -27,7 +27,7 @@
 				ng-minlength="4"
 				required="required">
 				<span class="help-block" ng-show="signupForm.password.$error.minlength">Password must be at least 4 characters</span>
-				<span class="help-block" ng-show="passwordError">Password and its repeat must match</span>
+				<span class="help-block" ng-show="passwordError && signupForm.passwordRepeat.$dirty">Password and its repeat must match</span>
 				<span class="help-block" ng-show="signupForm.password.$error.required && signupForm.password.$dirty">Required</span>
 			</div>
 			<div class="form-group has-feedback" 
@@ -39,13 +39,13 @@
 				ng-change="checkPasswords()" 
 				ng-minlength="4" 
 				required="required">
-				<span class="help-block" ng-show="passwordError">Password and its repeat must match</span>
+				<span class="help-block" ng-show="passwordError && signupForm.passwordRepeat.$dirty">Password and its repeat must match</span>
 			</div>
 			<div class="form-group has-feedback">
 				<label for="emailInput">Email (Optional)</label>
-				<input type="email" class="form-control" id="emailInput" name="email" placeholder="example@ex.com" ng-model="newUser.email">
+				<input type="email" class="form-control" id="emailInput" name="email" placeholder="example@domain.com" ng-model="newUser.email">
 			</div>
-			<button type="submit" class="btn" ng-class="{ 'btn-success': (signupForm.$valid || (!passwordError && signupForm.$valid)) && !error, 'btn-danger': signupForm.$invalid || passwordError || error }" ng-disabled="signupForm.$invalid || passwordErro || errorr">Sign Up</button>
+			<button type="submit" class="btn" ng-class="{ 'btn-primary': (signupForm.$valid || (!passwordError && signupForm.$valid)) && !error, 'btn-danger': signupForm.$invalid || passwordError || error }" ng-disabled="signupForm.$invalid || passwordErro || errorr">Sign Up</button>
 		</form>
 	</div>
 </div>

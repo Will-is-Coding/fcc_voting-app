@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" id="new-poll-title">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 page-heading" id="new-poll-title">
         <h3>Put Your Own Ballot Box Out There</h3>
     </div>
     <div id="new-poll" class="col-lg-12 col-md-12 col-sm-12 col-xs-12" ng-hide="created">
@@ -15,12 +15,12 @@
                         ng-model="poll" 
                         placeholder="Poll Question" 
                         ng-minlength="2"
-                        ng-maxlength="100"
+                        ng-maxlength="50"
                         ng-change="pollRemoveError()"
                         required="required" />
                         
                         <span ng-show="newPollForm.pollQuestion.$error.minlength && newPollForm.pollQuestion.$dirty" class="help-block">You need a valid poll question with at least two characters</span>
-                        <span ng-show="newPollForm.pollQuestion.$error.maxlength && newPollForm.pollQuestion.$dirty" class="help-block">Cannot be longer than 100 characters</span>
+                        <span ng-show="newPollForm.pollQuestion.$error.maxlength && newPollForm.pollQuestion.$dirty" class="help-block">Cannot be longer than 50 characters</span>
                         <span ng-show="creationError && pollError && !optionsError" class="help-block">{{message}}</span>
                     </div>
                     <label>Options</label>
@@ -30,19 +30,24 @@
                         
                         <div class="input-group">
                             <ng-form name="newOptForm">
-                                <input type="text" class="form-control poll-option" ng-minlength="1" ng-maxlength="50" placeholder="Add Option" ng-model="option.optText" ng-change="checkIfUnique(option)" name="newOpt" ng-disabled="option.added">
+                                <input type="text" class="form-control poll-option" ng-minlength="1" ng-maxlength="25" placeholder="Add Option" ng-model="option.optText" ng-change="checkIfUnique(option)" name="newOpt" ng-disabled="option.added">
                             </ng-form>
                             <span class="input-group-btn" class="add-option">
                                 <button class="btn glyphicon" ng-class="{ 'btn-success glyphicon-ok' : !option.added, 'btn-danger glyphicon-remove' : option.added }" type="button" ng-click="option.added ? removeOpt(option, $index) : addOpt(option, $index)"></button>
                             </span>
                         </div>
                         
-                         <span ng-show="newPollForm.newOpt.$error.maxlength" class="help-block">Cannot be longer than 50 characters</span>
+                         <span ng-show="newPollForm.newOpt.$error.maxlength" class="help-block">Cannot be longer than 25 characters</span>
                          <span ng-show="!option.unique" class="help-block">This option has already been added</span>
                          <span ng-show="optionsError && creationError && !pollError" class="help-block">{{message}}</span>
                     </div>
                     <div class="form-group">
-                        <label><input type="checkbox" name="private" ng-model="secret" disabled="disabled"> Private Poll </label>
+                        <div class="input-group">
+                            <label><input type="checkbox" name="private" ng-model="hidden"> Private Poll </label>
+                        </div>
+                        <div class="input-group">
+                            <label><input type="checkbox" name="draft" ng-model="draft"> Draft </label>
+                        </div>
                     </div>
                     <div class="form-group has-feedback" ng-class="{ 'has-error': creationError && pollError && optionsError }">
                         <span class="help-block" ng-show="creationError && pollError && optionsError">{{message}}</span>
@@ -61,22 +66,23 @@
             <h2>Your Ballot Box is now open!</h2>
             <p>It is now on the home page(if not marked as private).</p>
         </div>
+        <div class="row">
+            <div class="text-center" id="create-new-poll">
+                <a ng-href="{{newPollUrl}}"><button class="btn btn-primary">Open Your Poll</button></a>
+                <button class="btn btn-primary" ng-click="restartNewPoll()">Create Another</button>
+            </div>
+        </div>
         <div class="row row-centered">
             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 col-centered">
                 <div class="input-group pull-right">
     				<input id="poll-link" type="text" class="form-control" value="{{newPollUrl}}" select-on-click readonly>
     				<span class="input-group-btn">
-    					<button class="btn btn-secondary btn-success" type="button" ngclipboard data-clipboard-text="{{newPollUrl}}">Share</button>
+    					<button class="btn btn-secondary btn-info" type="button" ngclipboard data-clipboard-text="{{newPollUrl}}">Share</button>
     				</span>
     			</div>
 			</div>
 		</div>
-		<div class="row row-centered">
-			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 col-centered text-center" id="create-new-poll">
-                <label>Would you like to make another? </label>
-                <button class="btn btn-primary" ng-click="restartNewPoll()">New Poll</button>
-            </div>
-        </div>
+		
         </div>
     </div>
 </div>

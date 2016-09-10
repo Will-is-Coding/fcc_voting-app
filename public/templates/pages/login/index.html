@@ -32,7 +32,7 @@
 			<button type="submit" class="btn btn-default" 
 			ng-class="{'btn-danger': (signInForm.username.$invalid) || userError || 
 			(signInForm.password.$invalid) || passowrdError,
-			'btn-success': signInForm.username.$valid && !userError && signInForm.password.$valid && !passwordError }"
+			'btn-primary': signInForm.username.$valid && !userError && signInForm.password.$valid && !passwordError }"
 			ng-disabled="(signInForm.username.$invalid) || userError || 
 			(signInForm.password.$invalid) || passowrdError">Login</button>
 		</form>

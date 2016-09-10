@@ -33,8 +33,9 @@
         //TODO: Move to userService?
         $scope.attemptLogin = function(user) {
             console.log(user);
-            $http({ method: 'POST', url: '/api/authenticate', data: JSON.stringify(user) })
+            $http({ method: 'POST', url: '/api/user/signin', data: JSON.stringify(user) })
                 .then( function successCB(response) {
+                    console.log(response);
                     if( response.status === 200 && response.data.success === true) {
                         userService.setUsername(response.data.username);
                         navService.notify();

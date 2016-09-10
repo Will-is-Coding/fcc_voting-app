@@ -22,9 +22,9 @@
         
         var svgCreation = function(data, id, poll) {
           console.log(id);
-          
+
           var width = $(id).width(), height = 400;
-          
+          console.log(width);
           poll.chart.radius = Math.min(width, height) / 2;
           poll.chart.color = d3.scale.category20();
   
@@ -44,17 +44,17 @@
               .value(function(d) { console.log(d); return d.count; })
               .sort(null);
           
-          var ttip = d3.select(id)
+          poll.chart.ttip = d3.select(id)
               .append('div')
               .attr('class', 'ttip');
           
-          ttip.append('div')
+          poll.chart.ttip.append('div')
               .attr('class', 'vote');
           
-          ttip.append('div')
+          poll.chart.ttip.append('div')
               .attr('class', 'count');
           
-          ttip.append('div')
+          poll.chart.ttip.append('div')
               .attr('class', 'percent');
               
               
@@ -71,20 +71,20 @@
               
                   var percent = Math.round(1000 * d.data.count/total) / 10;
                   
-                  ttip.select('.vote').html(d.data.vote);
+                  poll.chart.ttip.select('.vote').html(d.data.vote);
                   
                   if( d.data.vote !== "No Votes") {
-                    ttip.select('.count').html(d.data.count + ' vote(s)');
-                    ttip.select('.percent').html(percent + "%");
+                    poll.chart.ttip.select('.count').html(d.data.count + ' vote(s)');
+                    poll.chart.ttip.select('.percent').html(percent + "%");
                   }
                   
-                  ttip.style('display', 'block');
+                  poll.chart.ttip.style('display', 'block');
               })
               .on('mouseout', function(d) {
-                  ttip.style('display', 'none');
+                  poll.chart.ttip.style('display', 'none');
               })
               .on('mousemove', function(d) {
-                  ttip.style('top', (d3.event.layerY + 10) + 'px')
+                  poll.chart.ttip.style('top', (d3.event.layerY + 10) + 'px')
                     .style('left', (d3.event.layerX + 10) + 'px');
               })
               .transition()
@@ -156,6 +156,8 @@
             .attr('x', legendRectSize + legendSpacing)
             .attr('y', legendRectSize - legendSpacing)
             .text(function(d) { return d; });
+            
+            console.log(poll.chart.svg);
               
         };
         
@@ -197,7 +199,7 @@
         };
         
 
-        chart.addOrRemoveVote = function(poll, newOptions, add) {
+        chart.editPoll = function(poll, newOptions, add) {
 
             var data = newOptions;
 
@@ -225,7 +227,8 @@
                 color(data[i].vote);
               }
             }
-
+            
+            data.forEach(function(d) { d.enabled = true; });
 
             if( (!hasVotes(poll.options) && add) || ( !hasVotes(newOptions) && !add) ) {
               svg.selectAll('path').remove();
@@ -267,6 +270,34 @@
               });
               
             }
+            
+            path.on('mouseover', function(d) {
+              console.log(d);
+                  var total = d3.sum(data.map(function(d) {
+                    return (d.enabled) ? d.count : 0;
+                  }));
+                  
+                  var percent = Math.round(1000 * d.data.count/total) / 10;
+                  
+                  poll.chart.ttip.select('.vote').html(d.data.vote);
+                  console.log(d.data.vote === "No Votes");
+                  if( d.data.vote !== "No Votes") {
+                    poll.chart.ttip.select('.count').html(d.data.count + ' vote(s)');
+                    poll.chart.ttip.select('.percent').html(percent + "%");
+                  } else {
+                    poll.chart.ttip.select('.count').html('');
+                    poll.chart.ttip.select('.percent').html('');
+                  }
+                  
+                  poll.chart.ttip.style('display', 'block');
+              })
+              .on('mouseout', function(d) {
+                  poll.chart.ttip.style('display', 'none');
+              })
+              .on('mousemove', function(d) {
+                  poll.chart.ttip.style('top', (d3.event.layerY + 10) + 'px')
+                    .style('left', (d3.event.layerX + 10) + 'px');
+              })
             
             if( !hasVotes(newOptions) && !add) {
               path = svg.selectAll('path')
