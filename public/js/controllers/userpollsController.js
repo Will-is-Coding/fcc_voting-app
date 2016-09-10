@@ -209,6 +209,16 @@
 			return false;
 		};
 		
+		$scope.resetMessages = function(poll) {
+			poll.updateOptsSuccess = false;
+			poll.updateOptsMessage = '';
+			
+			poll.clearVotesSuccess = false;
+			poll.clearVotesMessage = '';
+			
+			poll.visibilitySuccess = false;
+			poll.visibilityMessage = '';
+		};
 		
 	}]);
 })();

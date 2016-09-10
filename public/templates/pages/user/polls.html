@@ -79,7 +79,7 @@
     					                    ng-maxlength="50"
     					                    placeholder="New Option"
     					                    ng-model="newOption.optText"
-    					                    ng-change="aUniqueOption(poll, newOption)"
+    					                    ng-change="aUniqueOption(poll, newOption); resetMessages(poll)"
     					                    ng-disabled="newOption.submittedSuccess || newOption.added">
 
     					                    <span class="input-group-btn">
@@ -98,18 +98,18 @@
                 					    <label class="btn" type="button" uib-btn-checkbox
                 					    ng-class="{'btn-danger': poll.deletePoll, 'btn-default': !poll.deletePoll}"
                 					    ng-model="poll.deleteBtn"
-                					    ng-click="poll.deletePoll = !poll.deletePoll">Delete Poll</label>
+                					    ng-click="poll.deletePoll = !poll.deletePoll; resetMessages(poll)">Delete Poll</label>
 
                 					    <label class="btn btn-default" type="button" uib-btn-checkbox
                 					    ng-class="{'btn-danger': poll.clearVotes, 'btn-default': !poll.clearVotes}"
                 					    ng-model="poll.clearBtn"
-                					    ng-click="poll.clearVotes = !poll.clearVotes"
+                					    ng-click="poll.clearVotes = !poll.clearVotes; resetMessages(poll)"
                 					    ng-disabled="poll.totalVotes === 0">Clear Votes</label>
 
                 					    <label class="btn" type="button" uib-btn-checkbox
                 					    ng-class="{'btn-primary': poll.isPrivate, 'btn-default': !poll.isPrivate}"
                 					    ng-model="poll.privateBtn"
-                					    ng-click="poll.isPrivate = !poll.isPrivate">Private Poll</label>
+                					    ng-click="poll.isPrivate = !poll.isPrivate; resetMessages(poll)">Private Poll</label>
                 					</div>
 
     					            <button type="submit" class="btn btn-success change-btn">Change Poll</button>

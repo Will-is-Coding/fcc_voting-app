@@ -302,9 +302,11 @@
         			
         			if(poll) {
         				
-        				for( var i = 0; i < poll.options; i++ ) {
+        				for( var i = 0; i < poll.options.length; i++ ) {
         					poll.options[i].count = 0;
         				}
+        				
+        				
         				
         				poll.save(function(err) {
         					if(err) {
