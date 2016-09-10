@@ -38,9 +38,14 @@
 			   $scope.myPolls[i].removedOptions = [];
 			   $scope.myPolls[i].deletePoll 	= false;
 			   $scope.myPolls[i].clearVotes 	= false;
-			   $scope.myPolls[i].updateSuccess	= false;
-			   $scope.myPolls[i].message		= '';
 			   $scope.myPolls[i].isPrivate		= $scope.myPolls[i].secret;
+			   
+			   $scope.myPolls[i].updateOptsSuccess	= false;
+			   $scope.myPolls[i].clearVotesSuccess	= false;
+			   $scope.myPolls[i].visibilitySuccess	= false;
+			   $scope.myPolls[i].updateOptsMessage	= '';
+			   $scope.myPolls[i].clearVotesMessage	= '';
+			   $scope.myPolls[i].visibilityMessage	= '';
 		   }
 	   };
 		
@@ -106,22 +111,22 @@
 			console.log(response);
 			if( err )
 				throw err;
+				
+			tempPoll.updateOptsSuccess = response.success;
+			tempPoll.updateOptsMessage = response.message;	
+			
 			if( response.success ) {
-				$scope.updateSuccess = true;
-
+				
 				for( var i = tempPoll.newOptions.length - 1; i >= 0; i-- ) {
-					console.log(tempPoll.newOptions);
 					if( tempPoll.newOptions[i].added )
 						tempPoll.newOptions.pop();
 				}
 				
 				tempPoll.options = response.options;
 			}
-			else
-				$scope.updateSucces = false;
 				
-			$scope.message = response.message;
 			tempPoll.newOptions.push( new _option() );
+			
 		  
 		};
 		
@@ -129,8 +134,11 @@
 			console.log(response);
 			if( err )
 				throw err;
+				
+			tempPoll.clearVotesSuccess = response.success;
+			tempPoll.clearVotesMessage = response.message;
+			
 			if( response.success ) {
-				$scope.clearVotesSuccess = true; 
 				
 				tempPoll.clearVotes = false;
 				tempPoll.totalVotes = 0;
@@ -139,15 +147,20 @@
 					tempPoll.options[i].count = 0;
 				}
 			}
+			
 		};
 		
 		var handlePollVisiblity = function(err, response) {
 			if(err) 
 				throw err;
+				
+			tempPoll.visibilitySuccess = response.success;
+			tempPoll.visibilityMessage = response.message;
 			
 			if( response.success ) {
 				tempPoll.secret = tempPoll.isPrivate;
 			}
+			
 		};
 		
 		$scope.makePollOptionChanges = function(poll, index) {

@@ -113,8 +113,11 @@
                 					</div>
 
     					            <button type="submit" class="btn btn-success change-btn">Change Poll</button>
-    					            <div class="form-group has-feedback" ng-class="{'has-error': !updateSuccess && message, 'has-success': updateSuccess}">
-        					            <span class="help-block" ng-show="poll.updateSuccess">{{message}}</span>
+    					            <div class="form-group has-feedback" ng-class="{'has-error': (!poll.updateOptsSuccess && poll.updateOptsMessage) || (!poll.clearVotesSuccess && poll.clearVotesMessage) || (!poll.visibilitySuccess && poll.visibilityMessage),
+    					            'has-success': (poll.updateOptsSuccess && poll.updateOptsMessage) || (poll.clearVotesSuccess && poll.clearVotesMessage) || (poll.visibilitySuccess && poll.visibilityMessage)}">
+        					            <span class="help-block" ng-show="poll.updateOptsMessage">{{poll.updateOptsMessage}}</span>
+        					            <span class="help-block" ng-show="poll.clearVotesMessage">{{poll.clearVotesMessage}}</span>
+        					            <span class="help-block" ng-show="poll.visibilityMessage">{{poll.visibilityMessage}}</span>
     					            </div>
     					        </form>
     					    </div>
