@@ -6,7 +6,7 @@
         var votedFor = '';
         var tempPoll = null;
         $scope.loggedIn = false;
-        
+        $scope.loaded = false;
         
         var getPoll = function(error, poll, username, loggedIn) {
             if( error )
@@ -16,6 +16,7 @@
             pollService.buildChart(poll, "#single-chart");
             $scope.loggedIn = loggedIn;
             $scope.username = username;
+            $scope.loaded = true;
         };
         
         var getAllPolls = function(error, polls, username, loggedIn) {
@@ -25,6 +26,7 @@
                 $scope.allPolls = polls;
                 $scope.loggedIn = loggedIn;
                 $scope.username = username;
+                $scope.loaded = true;
             }
         };
         

@@ -33,7 +33,7 @@ var pollSchema = new Schema( {
         human: String
     },
     draft: Boolean,
-    hidden: Boolean
+    secret: Boolean
 });
 
 // pollSchema.methods.userValidation = function() {} ?

@@ -14,7 +14,7 @@ var User = new Schema({
 
     token: String,
     active: Boolean,
-    type: String
+    admin: Boolean
 }, {
     toObject: {
         virtuals: true

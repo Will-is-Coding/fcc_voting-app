@@ -1,9 +1,4 @@
 'use strict';
-/**********************************
-*            TODO
-* Have warning or dont delete till 'change' is clicked for deleting polls and clearing votes
-* 
-* ********************************/
 (function() {
 	angular.module('VotingApp').controller('UserPollsController', [ '$scope', 'userService', 'pollService', function($scope, userService, pollService) {
 		
@@ -12,8 +7,6 @@
 		
 		var tempPoll		= null;
 		var tempPollIndex	= null;
-		var toDeleteID		= [];
-		var toClearVoteID	= [];
 		
 		function _option() {
 		   this.added = false;
@@ -156,11 +149,12 @@
 			else {
 				tempPoll = poll;
 				
-				if( poll.newOptions.length > 0 || poll.removedOptions.length > 0 ) {
+				if( (poll.newOptions.length > 0 || poll.removedOptions.length > 0) && optionsChanged(poll) ) {
 					poll.newOptions.pop();
 					pollService.updateOptions( cleanNewOptions(poll.newOptions), poll.removedOptions, poll.options, poll._id, poll.creator.name, handlePollEdition );
 				}
 				if( poll.clearVotes ) {
+					console.log('here');
 					pollService.clearVotes(poll, handleClearVotes);
 				}
 				if( poll.isPrivate ) {
@@ -174,29 +168,24 @@
 			if( err || response.err )
 				throw err;
 
-			//$scope.myPolls[tempPollIndex].deletion = response;
 			console.log(response);
 			if( response.success ) {
 				$scope.myPolls.splice(tempPollIndex, 1);
 			}
 		};
 		
-		$scope.deletePoll = function(poll, index) {
-			
-			if( poll && index < $scope.myPolls.length ) {
-				tempPollIndex = index;
-				poll.deletePoll = !poll.deletePoll;
-				//pollService.deletePoll(poll._id, handlePollDeletion);  
+		var optionsChanged = function(poll) {
+			if( poll.removedOptions.length > 0 )
+				return true;
+				
+			for(var i = 0; i < poll.newOptions.length; i++) {
+				if( poll.newOptions[i].added )
+					return true;
 			}
+			
+			return false;
 		};
 		
-		$scope.clearVotes = function(poll, index) {
-			poll.clearVotes = !poll.clearVotes;
-		};
-		
-		$scope.makePrivate = function(poll, index) {
-			poll.isPrivate = !poll.isPrivate;
-		};
 		
 	}]);
 })();

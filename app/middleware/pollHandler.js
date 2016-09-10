@@ -5,7 +5,9 @@
 	 * TODO: 
 	 * Check if admin
 	 * Check upper and lowercase creator name and username
-	 * When fetching all polls, only return those that are not hidden or a draft
+	 * When fetching all polls, only return those that are not secret or a draft
+	 * Make private polls
+	 * Make draft polls
 	 * 
 	 * **********************************/
     var moment = require('moment');
@@ -121,7 +123,7 @@
 							voters: [],
 							options: craftedOptions,
 							creationDate: { unix: moment().unix(), human: moment().format("MMM DD, YYYY") },
-							live: req.body.draft,
+							draft: req.body.draft,
 							secret: req.body.secret
 						});
 
@@ -271,7 +273,7 @@
 		/** Check if the user is either the creator of the poll or an admin **/
         checkAuthorization: function(req, res, next) {
         	//TODO: CHECK IF USER IS ADMIN
-        	Poll.findById( { _id: req.params.id, "creator.name": req.username } ,
+        	Poll.findOne( { _id: req.params.id, "creator.name": req.username } ,
         	function(err, poll) {
         		if(err) {
         			res.status(200).json({error: err, success: false});
@@ -291,8 +293,35 @@
         },
 
         removeAllVotes: function(req, res) {
-        	if( req.creator || req.admin )
-            	Poll.findByIdAndUpdate(req.params.id, { "options.count": {} });
+        		
+        	if( req.creator || req.admin ) {
+            	Poll.findById(req.params.id, function(err, poll) {
+            		if(err) {
+	        			res.status(200).json({error: err, success: false});
+	        			throw err;
+        			}
+        			
+        			if(poll) {
+        				
+        				for( var i = 0; i < poll.options; i++ ) {
+        					poll.options[i].count = 0;
+        				}
+        				
+        				poll.save(function(err) {
+        					if(err) {
+        						res.status(200).json({error: err, success: false});
+        						throw err;
+        					}
+        					
+        					res.status(200).json({message: "Successfully cleared votes", success: true});
+        				});
+        			}
+        			else 
+        				res.status(200).json({message: "Couldn't find poll", success: false});
+            	});
+        	}
+        	else
+        		res.status(200).json({message: "Must be an admin or the creator of the poll to clear the votes", success: false});
         },
 
 		/** Check unique option if single; Check unique options if in set of new options **/

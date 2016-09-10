@@ -95,20 +95,20 @@
     				                </div>
 
     				                <div class="row text-center" id="poll-manage">
-                					    <button class="btn" type="button"
+                					    <label class="btn" type="button" uib-btn-checkbox
                 					    ng-class="{'btn-danger': poll.deletePoll, 'btn-default': !poll.deletePoll}"
                 					    ng-model="poll.deleteBtn"
-                					    ng-click="poll.deletePoll = !poll.deletePoll">Delete Poll</button>
+                					    ng-click="poll.deletePoll = !poll.deletePoll">Delete Poll</label>
 
-                					    <button class="btn btn-default" type="button"
+                					    <label class="btn btn-default" type="button" uib-btn-checkbox
                 					    ng-class="{'btn-danger': poll.clearVotes, 'btn-default': !poll.clearVotes}"
                 					    ng-model="poll.clearBtn"
-                					    ng-click="poll.clearVotes = !poll.clearVotes">Clear Votes</button>
+                					    ng-click="poll.clearVotes = !poll.clearVotes">Clear Votes</label>
 
-                					    <button class="btn" type="button"
+                					    <label class="btn" type="button" uib-btn-checkbox
                 					    ng-class="{'btn-primary': poll.isPrivate, 'btn-default': !poll.isPrivate}"
                 					    ng-model="poll.privateBtn"
-                					    ng-click="poll.isPrivate = !poll.isPrivate">Hide Poll</button>
+                					    ng-click="poll.isPrivate = !poll.isPrivate">Hide Poll</label>
                 					</div>
 
     					            <button type="submit" class="btn btn-success change-btn">Change Poll</button>

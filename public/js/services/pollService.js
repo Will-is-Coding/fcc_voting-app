@@ -226,9 +226,12 @@
         };
         
         this.clearVotes = function(poll, handleClearVotes) {
-            $http({ method: 'DELETE', url: '/api/poll/votes'})
+            $http({ method: 'DELETE', url: '/api/poll/' + poll._id + '/votes'})
                 .then( function successCB(response) {
-                    handleClearVotes(null, response);
+                    if( response.data.success ) {
+                        chartFactory.editPoll(poll, {vote: "No Votes", count: 0}, false);
+                    }
+                    handleClearVotes(null, response.data);
                 }, function errorCB(error) {
                    handleClearVotes(error, null); 
                 });

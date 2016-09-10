@@ -32,7 +32,7 @@
     					res.status(200).json({ success: false, message: 'A user with that username has already been created.' });
     				}
     				else {
-    					User.create({username: username, username_lower: username.toLowerCase(), password: password, email: email, type: 'admin', ipaddress: req.headers["x-forwarded-for"]}, function(err, newUser) {
+    					User.create({username: username, username_lower: username.toLowerCase(), password: password, email: email, admin: false, ipaddress: req.headers["x-forwarded-for"]}, function(err, newUser) {
     						if (err)
     							throw err;
     						else {
