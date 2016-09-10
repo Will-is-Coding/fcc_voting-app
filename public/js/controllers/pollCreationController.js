@@ -2,8 +2,7 @@
 ( function() {
 	angular.module('VotingApp').controller('PollCreationController', ['$scope', '$http', 'pollService', function($scope, $http, pollService) {
 		$scope.poll             = '';
-		$scope.hidden           = false;
-		$scope.draft            = false;
+		$scope.isPrivate        = false;
 		$scope.created          = false;
 		$scope.creationError	= false;
 		$scope.creationMessage	= "";
@@ -123,7 +122,7 @@
 			
 			if( $scope.poll.length > 0 && $scope.poll.length <= 50 && $scope.options.length > 1 && $scope.checkOptionsValid() ) {
 				cleanOptions();
-				pollService.createPoll($scope.poll, $scope.tempOptions, $scope.hidden, $scope.draft, handlePollCreation);
+				pollService.createPoll($scope.poll, $scope.tempOptions, $scope.isPrivate, handlePollCreation);
 			}
 			else {
 				$scope.created = false;

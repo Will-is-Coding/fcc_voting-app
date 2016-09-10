@@ -5,9 +5,9 @@
 	 * TODO: 
 	 * Check if admin
 	 * Check upper and lowercase creator name and username
-	 * When fetching all polls, only return those that are not secret or a draft
-	 * Make private polls
-	 * Make draft polls
+	 * When fetching all polls, only return those that are not secret
+	 * 
+	 * 
 	 * 
 	 * **********************************/
     var moment = require('moment');
@@ -123,7 +123,6 @@
 							voters: [],
 							options: craftedOptions,
 							creationDate: { unix: moment().unix(), human: moment().format("MMM DD, YYYY") },
-							draft: req.body.draft,
 							secret: req.body.secret
 						});
 
@@ -477,13 +476,31 @@
 					throw err;
 				}
 				if( poll ) {
-					console.log(poll.options);
 					res.status(200).json({message: "Succesfully removed your option", success: true, options: poll.options, voters: poll.voters});
 				}
 				else
 					res.status(200).json({message: "Option not found or not the creator", success: false});
 			});
         },
+        
+        changePollVisiblity: function(req, res) {
+        	if( req.creator || req.admin ) {
+        		Poll.findByIdAndUpdate(req.params.id, {secret: req.body.isPrivate}, function(err, poll) {
+        			if( err ) {
+						res.status(200).json({error: err, success: false});
+						throw err;
+					}
+					
+					if( poll ) {
+						res.status(200).json({message: "Successfully changed poll's visibility", success: true});
+					}
+					else
+						res.status(200).json({message: "Could not find poll to change visibility", success: false});
+        		});
+        	}
+        	else
+        		res.status(200).json({message: "You must be the creator or an admin to change the visibility", success: false});
+        }
 
 
     };

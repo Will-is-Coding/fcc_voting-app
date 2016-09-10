@@ -42,12 +42,14 @@
                          <span ng-show="optionsError && creationError && !pollError" class="help-block">{{message}}</span>
                     </div>
                     <div class="form-group">
-                        <div class="input-group">
+                        <!--<div class="input-group">
                             <label><input type="checkbox" name="private" ng-model="hidden"> Private Poll </label>
-                        </div>
-                        <div class="input-group">
-                            <label><input type="checkbox" name="draft" ng-model="draft"> Draft </label>
-                        </div>
+                            
+                        </div>-->
+                        <label class="btn" type="button" uib-btn-checkbox
+                					    ng-class="{'btn-primary': isPrivate, 'btn-default': !isPrivate}"
+                					    ng-model="privateBtn"
+                					    ng-click="isPrivate = !isPrivate">Private Poll</label>
                     </div>
                     <div class="form-group has-feedback" ng-class="{ 'has-error': creationError && pollError && optionsError }">
                         <span class="help-block" ng-show="creationError && pollError && optionsError">{{message}}</span>
@@ -55,8 +57,7 @@
                     <button type="submit" class="btn"
                     ng-class="{ 'btn-success': !creationError && newOptionsValid && newPollForm.pollQuestion.$valid,
                     'btn-danger': creationError || !newOptionsValid || newPollForm.pollQuestion.$invalid }"
-                    ng-disabled="creationError || !newOptionsValid || newPollForm.pollQuestion.$invalid || !checkOptionsValid()">Create</button>
-                    <button class="btn btn-danger" disabled="disabled">Save</button>
+                    ng-disabled="creationError || !newOptionsValid || newPollForm.pollQuestion.$invalid || !checkOptionsValid()">Create Poll</button>
                 </form>
             </div>
         </div>

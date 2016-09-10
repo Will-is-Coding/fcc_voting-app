@@ -39,7 +39,8 @@
 			   $scope.myPolls[i].deletePoll 	= false;
 			   $scope.myPolls[i].clearVotes 	= false;
 			   $scope.myPolls[i].updateSuccess	= false;
-			   $scope.myPolls[i].message		= '';		
+			   $scope.myPolls[i].message		= '';
+			   $scope.myPolls[i].isPrivate		= $scope.myPolls[i].secret;
 		   }
 	   };
 		
@@ -131,6 +132,9 @@
 			if( response.success ) {
 				$scope.clearVotesSuccess = true; 
 				
+				tempPoll.clearVotes = false;
+				tempPoll.totalVotes = 0;
+				
 				for( var i = 0; i < tempPoll.options.length; i++ ) {
 					tempPoll.options[i].count = 0;
 				}
@@ -138,7 +142,12 @@
 		};
 		
 		var handlePollVisiblity = function(err, response) {
-			console.log('handling');
+			if(err) 
+				throw err;
+			
+			if( response.success ) {
+				tempPoll.secret = tempPoll.isPrivate;
+			}
 		};
 		
 		$scope.makePollOptionChanges = function(poll, index) {
@@ -153,12 +162,13 @@
 					poll.newOptions.pop();
 					pollService.updateOptions( cleanNewOptions(poll.newOptions), poll.removedOptions, poll.options, poll._id, poll.creator.name, handlePollEdition );
 				}
-				if( poll.clearVotes ) {
-					console.log('here');
+				
+				if( poll.clearVotes && poll.totalVotes > 0 ) {
 					pollService.clearVotes(poll, handleClearVotes);
 				}
-				if( poll.isPrivate ) {
-					pollService.changePollVisiblity(poll._id, handlePollVisiblity);
+				
+				if( poll.isPrivate !== poll.secret ) {
+					pollService.changePollVisiblity(poll._id, poll.isPrivate, handlePollVisiblity);
 				}
 			}
 			

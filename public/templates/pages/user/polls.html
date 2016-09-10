@@ -60,8 +60,8 @@
     					    <div id="option-managment">
     					        <form name="optionManagement" ng-submit="makePollOptionChanges(poll, $index)">
     					            <div class="form-group">
-    					                <label for="pollOptions">Options</label>
-    					                <div class="input-group" ng-repeat="option in poll.options">
+    					                <label class="pull-left" for="pollOptions">Options</label>
+    					                <div class="input-group pull-right" ng-repeat="option in poll.options">
     					                    <input text="text" class="form-control poll-option" value="{{option.vote}}" disabled>
     					                    <span class="input-group-btn">
                                                 <button class="btn btn-secondary glyphicon btn-danger glyphicon-remove"
@@ -103,12 +103,13 @@
                 					    <label class="btn btn-default" type="button" uib-btn-checkbox
                 					    ng-class="{'btn-danger': poll.clearVotes, 'btn-default': !poll.clearVotes}"
                 					    ng-model="poll.clearBtn"
-                					    ng-click="poll.clearVotes = !poll.clearVotes">Clear Votes</label>
+                					    ng-click="poll.clearVotes = !poll.clearVotes"
+                					    ng-disabled="poll.totalVotes === 0">Clear Votes</label>
 
                 					    <label class="btn" type="button" uib-btn-checkbox
                 					    ng-class="{'btn-primary': poll.isPrivate, 'btn-default': !poll.isPrivate}"
                 					    ng-model="poll.privateBtn"
-                					    ng-click="poll.isPrivate = !poll.isPrivate">Hide Poll</label>
+                					    ng-click="poll.isPrivate = !poll.isPrivate">Private Poll</label>
                 					</div>
 
     					            <button type="submit" class="btn btn-success change-btn">Change Poll</button>
