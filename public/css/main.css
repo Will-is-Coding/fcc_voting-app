@@ -29,6 +29,7 @@ body {
   color: #449d44;
 }
 
+
 #account-bar {
   background-color: #11204d;
   height: 30px;
@@ -105,6 +106,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#499bea', end
 
 #poll-nav > li {
   border-bottom: 1px solid #fff;
+  padding-right: 1px;
 }
 
 #poll-nav > li > a {
@@ -359,7 +361,6 @@ rect.disabled {
   /*width: 80px;*/
   z-index: 9999;
 }
-
 
 /******************
     User Polls

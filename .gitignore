@@ -3,7 +3,7 @@ node_modules/
 .env
 config.js
 
-app/errors
+app/errors/
 app/router/old_index.js
 
 public/controllers/singlePollController.js

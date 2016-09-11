@@ -22,21 +22,27 @@ router.put('/new', auth.requireToken, pollHandler.createPoll);
 //Fetch the polls created by the current user
 router.get('/user', auth.requireToken, pollHandler.fetchUserPolls);
 
+//For admin/development purposes
+router.get('/requestraw', auth.requireToken, auth.checkAdmin, pollHandler.rawPolls);
+
+//For admin/development purposes
+router.get('/deleteall', auth.requireToken, auth.checkAdmin, pollHandler.deleteAll);
+
 //Interact with a poll
 router.route('/:id')
         .get(pollHandler.fetchSinglePoll)                       								//Fetch single poll
-        .put(auth.requireToken, pollHandler.checkAuthorization, pollHandler.editPollOptions)    //Add and/or remove options of the poll as the creator
-        .delete(auth.requireToken, pollHandler.checkAuthorization, pollHandler.deletePoll);     //Delete the poll
+        .put(auth.requireToken, auth.checkAdmin, pollHandler.checkAuthorization, pollHandler.editPollOptions)    //Add and/or remove options of the poll as the creator
+        .delete(auth.requireToken, auth.checkAdmin, pollHandler.checkAuthorization, pollHandler.deletePoll);     //Delete the poll
 
-router.put('/:id/visibility', auth.requireToken, pollHandler.checkAuthorization, pollHandler.changePollVisiblity); //Make a poll private or public
+router.put('/:id/visibility', auth.requireToken, auth.checkAdmin, pollHandler.checkAuthorization, pollHandler.changePollVisiblity); //Make a poll private or public
 
 //Editing the votes of a poll
 router.route('/:id/vote/:option')
-        .put(pollHandler.submitVote)                            //Adds single vote to poll
-        .delete(auth.requireToken, pollHandler.removeUserVote); //Removes single vote from poll
+        .put(auth.checkAdmin, pollHandler.submitVote)                           //Adds single vote to poll
+        .delete(auth.requireToken, pollHandler.removeUserVote); 				//Removes single vote from poll
 
 //Remove all votes on the poll
-router.delete('/:id/votes', auth.requireToken, pollHandler.checkAuthorization, pollHandler.removeAllVotes);
+router.delete('/:id/votes', auth.requireToken, auth.checkAdmin, pollHandler.checkAuthorization, pollHandler.removeAllVotes);
 
 //Interact with a poll's options
 router.route('/:id/option/:option')

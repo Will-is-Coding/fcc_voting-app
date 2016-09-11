@@ -2,7 +2,7 @@
 ( function() {
     var jwt     = require('jsonwebtoken');
     var config = require('../../config.js');
-    
+    var User    = require('../models/users.js');
     
     /******************
      *
@@ -25,6 +25,7 @@
     				console.log('Has a verified cookie!!');
     				req.token       = decoded;
     				req.username    = decoded.username;
+    				req.admin       = decoded.admin;
     				req.loggedIn    = true;
     				next();
     			});
@@ -45,6 +46,34 @@
     		}
         },
         
+        checkAdmin: function(req, res, next) {
+            if( req.username ) {
+                if( !req.admin ) {
+                    User.findOne({username: req.username, username_lower: req.username.toLowerCase()}, 
+                        function(err, user) {
+                            if( err ) {
+                                res.status(200).json({error: err, success: false});
+                                throw err;
+                            }
+                            
+                            if( user ) {
+                                req.admin = user.admin;
+                            }
+                            else {
+                                req.admin = false;
+                            }
+                            
+                            next();
+                        });
+                }
+                else
+                    next();
+            }
+            else {
+                req.admin = false;
+                next();
+            }
+        }
         
     };
 })();

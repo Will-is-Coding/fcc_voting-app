@@ -186,7 +186,7 @@
 
         submitVote: function(req, res) {
 			/** Search and attain the poll and specific vote to increment vote count and push ipaddress for validation. Checks if the ipaddres and user has not voted before **/
-			//if( req.username ) {
+			if( !req.admin ) {
 				Poll.findOneAndUpdate(
 					{ _id: req.body._id, "options._id" : req.body.option_id, "options.vote": req.body.vote, "voters.username": { $ne: req.username }, "voters.ipaddress": { $ne: req.ipaddress } },
 					{
@@ -204,10 +204,11 @@
 					},
 					{ new: true },
 					function(err, poll) {
-						console.log(poll);
 
-						if (err)
+						if ( err ) {
+							res.status(200).json({success: false, error: err});
 							throw err;
+						}
 
 						if( poll === null )
 							res.status(200).json({success: false, message: "You already voted! One vote per user/ipaddress" });
@@ -215,35 +216,37 @@
 							res.status(200).json({success: true, message: "Vote has been submitted.", voted: req.body.vote, options: poll.options});
 						}
 					});
-		//	}
-			/** If client not logged in, check against ipaddress **/
-			/*else {
+			}
+			/** If client is an admin **/
+			else {
 				Poll.findOneAndUpdate(
-					{ _id: req.body._id, "options._id" : req.body.option_id, "options.vote": req.body.vote, "voters.ipaddress": { $ne: ipaddress } },
+					{ _id: req.body._id, "options._id" : req.body.option_id, "options.vote": req.body.vote },
 					{
 						$inc : { "options.$.count" : 1 },
 						$push:
 						{
 							'voters':
 							{
-								'ipaddress': ipaddress,
+								'username': req.username,
+								'ipaddress': req.ipaddress,
 								'votedFor_id': req.body.option_id
 							}
 						}
 					},
 					{ new: true },
 					function(err, poll) {
-						console.log(poll);
 
-						if (err)
+						if ( err ) {
+							res.status(200).json({error: err, success: false});
 							throw err;
+						}
 
-						if( poll === null )
-							res.status(200).json({submitted: false, message: "You already voted!" });
+						if( poll )
+							res.status(200).json({success: true, message: "Vote has been submitted.", voted: req.body.vote, options: poll.options });
 						else
-							res.status(200).json({submitted: true, message: "Vote has been submitted.", voted: req.body.vote, options: poll.options});
+							res.status(200).json({success: false, message: "Poll not located."});
 					});
-			}*/
+			}
         },
 
         removeUserVote: function(req, res) {
@@ -269,24 +272,22 @@
 				});
         },
 
-		/** Check if the user is either the creator of the poll or an admin **/
+		/** Check if the user is either the creator of the poll **/
         checkAuthorization: function(req, res, next) {
-        	//TODO: CHECK IF USER IS ADMIN
         	Poll.findOne( { _id: req.params.id, "creator.name": req.username } ,
         	function(err, poll) {
-        		if(err) {
+        		if( err ) {
         			res.status(200).json({error: err, success: false});
         			throw err;
         		}
 
-        		if(poll) {
+        		if( poll ) {
         			req.creator = true;
         			next();
         		}
         		else {
         			req.creator = false;
         			next();
-        			//res.status(200).json({message: "You must be the creator or an admin to edit the poll", submitted: false});
         		}
         	});
         },
@@ -295,12 +296,12 @@
         		
         	if( req.creator || req.admin ) {
             	Poll.findById(req.params.id, function(err, poll) {
-            		if(err) {
+            		if( err ) {
 	        			res.status(200).json({error: err, success: false});
 	        			throw err;
         			}
         			
-        			if(poll) {
+        			if( poll ) {
         				
         				for( var i = 0; i < poll.options.length; i++ ) {
         					poll.options[i].count = 0;
@@ -328,11 +329,12 @@
 		/** Check unique option if single; Check unique options if in set of new options **/
         uniqueOptions: function(req, res, next) {
     		Poll.findById(req.params.id, function(err, poll) {
-				if(err) {
+				if( err ) {
 					res.status(200).json({error: err, success: false});
+					throw err;
 				}
 
-				if(poll) {
+				if( poll ) {
 					if( req.body.vote ){
 						var optIndex =  poll.options.findIndex( option => option.vote.toLowerCase() === req.body.vote.toLowerCase() && option.vote.length === req.body.vote.length );
 
@@ -414,7 +416,7 @@
 						throw err;
 					}
 					
-					if(poll) {
+					if( poll ) {
 						poll.remove();
 						res.status(200).json({message: "Successfully deleted poll", success: true});
 					}
@@ -502,8 +504,34 @@
         	}
         	else
         		res.status(200).json({message: "You must be the creator or an admin to change the visibility", success: false});
+        },
+        
+        rawPolls: function(req, res) {
+        	if( req.admin ) {
+        		Poll.find({}, function(err, polls) {
+        			if( err ) {
+        				res.status(200).json({error: err, success: false});
+        				throw err;
+        			}
+        			res.status(200).json(polls);
+        		});
+        	}
+        	res.status(200).json({message: "Must be an admin", success: false});
+        },
+        
+        deleteAll: function(req, res) {
+        	if( req.admin ) {
+        		Poll.remove({}, function(err, poll) {
+        			if( err ) {
+        				res.status(200).json({error: err, success: false});
+        			}
+        			
+        			res.status(200).end();
+        		});
+        	}
+        	else
+        		res.status(200).end();
         }
-
 
     };
 })();
