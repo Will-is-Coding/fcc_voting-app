@@ -49,7 +49,7 @@
                         <label class="btn" type="button" uib-btn-checkbox
                 					    ng-class="{'btn-primary': isPrivate, 'btn-default': !isPrivate}"
                 					    ng-model="privateBtn"
-                					    ng-click="isPrivate = !isPrivate">Private Poll</label>
+                					    ng-click="isPrivate = !isPrivate">Make Private</label>
                     </div>
                     <div class="form-group has-feedback" ng-class="{ 'has-error': creationError && pollError && optionsError }">
                         <span class="help-block" ng-show="creationError && pollError && optionsError">{{message}}</span>

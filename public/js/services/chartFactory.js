@@ -1,8 +1,5 @@
 'using strict';
 (function() {
-  /** TODO: FIX SIZING ON ALL WEBPAGE WIDTHS        
-   * Shows tooltip of "1 vote(s) and percent when No Votes"
-  **/
     angular.module('VotingApp').factory('chartFactory', [ function() {
         var chart = {};
         var legendRectSize = 18;
@@ -16,10 +13,6 @@
           return false;
         };
         
-        //Width lg: 653px, md: 536px, sm: 720, xs: 698
-        var heightFromWidth = {
-        };
-        
         var svgCreation = function(data, id, poll) {
           console.log(id);
 
@@ -29,11 +22,14 @@
           poll.chart.color = d3.scale.category20();
   
           poll.chart.svg = d3.select(id)
+            .append('div')
+            .classed('svg-container', true)
             .append('svg')
-            .attr('width', '100%')
-            .attr('height', '100%')
-            .attr('viewBox', '0 0 ' + width  + ' ' + width / 1.5)
-            .attr('preserveAspectRatio', 'xMinYMin')
+            //.attr('width', '100%')
+            //.attr('height', '100%')
+            .attr('preserveAspectRatio', 'xMinYMin meet')
+            .attr('viewBox', '0 0 ' + width  + ' ' + width )
+            .classed('svg-content-responsive', true)
             .append('g')
             .attr("transform", "translate(" + (width/2.5) + "," + (poll.chart.radius) +")");
           
@@ -335,7 +331,6 @@
         };
         
         
-        //TODO: If user votes for new option after adding, make it display
         chart.addOption = function(newOpt, poll, newOptions) {
 
           if( hasVotes(newOptions) ) {

@@ -14,8 +14,7 @@
     	app.use( bodyparser.urlencoded({extended: false}) );
     	app.use( cookieParser() );
     	
-    	app.route('/')
-		.get( function (req, res) {
+    	app.get('/', function (req, res) {
 			res.status(200).sendFile(path + '/public/index.html');
 		});
         

@@ -1,5 +1,4 @@
 'use strict';
-//var Poll = require('../models/poll.js');
 (function() {
 	angular.module('VotingApp').service('pollService', [ '$http', '$routeParams', 'chartFactory', 'userService', function($http, $routeParams, chartFactory, userService) {
 		

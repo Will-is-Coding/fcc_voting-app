@@ -1,6 +1,6 @@
 'use strict';
 (function() {
-	angular.module('VotingApp').controller('UserPollsController', [ '$scope', 'userService', 'pollService', function($scope, userService, pollService) {
+	angular.module('VotingApp').controller('UserPollsController', [ '$scope', '$rootScope', '$location', 'userService', 'pollService', function($scope, $rootScope, $location, userService, pollService) {
 		
 		$scope.myPolls	= [];
 		$scope.loaded	= false;
@@ -48,11 +48,16 @@
 			   $scope.myPolls[i].visibilityMessage	= '';
 		   }
 	   };
+	   
+	   if( $rootScope.username === undefined ) {
+		$location.url('/');
+	   }
 		
 		var handlePolls = function(error, polls) {
 			if(error)
 				throw error;
-				
+			
+			console.log($rootScope.username);
 			$scope.loaded = true;
 			
 			if( polls ) {

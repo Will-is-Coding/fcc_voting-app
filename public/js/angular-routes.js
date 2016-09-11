@@ -13,7 +13,8 @@
         
         .when('/new/poll', {
             templateUrl: 'public/templates/pages/poll/new.html',
-            controller: 'PollCreationController'
+            controller: 'PollCreationController',
+            authorize: true
         })
         
         
@@ -29,7 +30,8 @@
         
         .when('/user/polls', {
             templateUrl: 'public/templates/pages/user/polls.html',
-            controller: 'UserPollsController'
+            controller: 'UserPollsController',
+            authorize: true
         })
         
         .when('/about', {
@@ -37,5 +39,28 @@
         }) 
         
         .otherwise({ redirectTo: '/' });
-    });
+    })
+    
+    .run(['$rootScope', '$location', function($rootScope, $location) {
+        $rootScope.$on("$routeChangeStart", function(evt, to, from) {
+            if( to.authorize ) {
+                to.resolve = to.resolve || {};
+                if( !to.resolve.authorizationResolver ) {
+                    to.resolve.authorizationResolver = function(authService) {
+                        return authService.authorize();
+                    };
+                }
+            }
+        });
+        
+        $rootScope.$on("$routeChangeError", function(evt, to, from, error) {
+            if( error instanceof AuthorizationError) {
+                $location.path('/');
+            }
+        });
+    }]);
+    
+    function AuthorizationError() {};
+    AuthorizationError.prototype = Error.prototype;
+    
 })();

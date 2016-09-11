@@ -53,7 +53,7 @@
                 poll.displaying = true;
             }
 
-            if( $(id + " > svg").length === 0 ) {
+            if( $(id + " > .svg-container > svg").length === 0 ) {
                 pollService.buildChart(poll, id);
             }
         };

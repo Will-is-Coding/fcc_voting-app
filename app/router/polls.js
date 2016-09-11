@@ -19,7 +19,6 @@ router.get('/fetchAll', pollHandler.fetchAllPolls);
 //Create a poll
 router.put('/new', auth.requireToken, pollHandler.createPoll);
 
-
 //Fetch the polls created by the current user
 router.get('/user', auth.requireToken, pollHandler.fetchUserPolls);
 
