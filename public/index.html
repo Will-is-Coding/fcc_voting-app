@@ -13,16 +13,40 @@
 		<div class="row" id="account-bar">
 			<div class="col-lg-3 col-md-4 col-sm-4 col-xs-4 pull-left">
 				<ul id="logo-home">
-					<li id="site-name"><a href="#/">Ballot Box</a></li>
-					<li><a href="#/">Home</a></li>
+					<li id="site-name">
+						<a href="#/">
+							Ballot Box
+						</a>
+					</li>
+					<li>
+						<a href="#/">
+							Home
+						</a>
+					</li>
 				</ul>
 			</div>
-			<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 pull-right" ng-controller="NavigationController as navCtrl">
+			<div class="col-lg-3 col-md-3 col-sm-4 col-xs-4 pull-right" ng-controller="NavigationController as navCtrl">
 				<ul id="account-tabs">
-					<li ng-hide="loggedIn" ng-cloak><a href="#/login">Sign In</a></li>
-					<li ng-hide="loggedIn" ng-cloak><a href="#/signup">Sign Up</a></li>
-					<li ng-show="loggedIn" ng-cloak><a ng-href="{{'#/user/' +  username}}" ng-cloak>{{username}}</a></li>
-					<li ng-show="loggedIn" ng-cloak><a href="api/user/signout">Sign Out</a></li>
+					<li ng-hide="loggedIn" ng-cloak>
+						<a href="#/login">
+							Sign In
+						</a>
+					</li>
+					<li ng-hide="loggedIn" ng-cloak>
+						<a href="#/signup">
+							Sign Up
+						</a>
+					</li>
+					<li ng-show="loggedIn" ng-cloak>
+						<a ng-href="{{'#/user/' +  username}}" ng-cloak>
+							{{username}}
+						</a>
+					</li>
+					<li ng-show="loggedIn" ng-cloak>
+						<a href="api/user/signout">
+							Sign Out
+						</a>
+					</li>
 				</ul>
 			</div>
 		</div>
@@ -33,24 +57,44 @@
 			<div class="container" id="main-display">
 				<div class="row" id="logo-display-row">
 					<div class="col-lg-3 col-lg-offset-1 col-md-4 col-md-offset-1 col-sm-4 col-sm-offset-1 col-xs-4 col-xs-offset-1 text-center" id="logo-display">
-						<img src="public/img/ballot-box-logo.png"></img>
+						<img class="img-responsive" src="public/img/ballot-box-logo.png"></img>
 					</div>
 					<div class="col-lg-7 col-md-6 col-sm-6 col-xs-6" id="descript-display">
 						<h1>Box Up Your Thoughts</h1>
-						<span>Share your vote and submit your ballots. Create and manage both your votes and boxes. Get your ballots and boxes out there!</span>
+						<span>
+							Share your vote and submit your ballots. Create and manage both your votes and boxes. 
+						Get your ballots and boxes out there!
+						</span>
 					</div>
 				</div>
-				<div class="row text-center hidden-xs" id="poll-nav-row">
-					<!-- TODO: Fix display of tabs when xs -->
-					<div class="col-lg-6 col-md-7 col-sm-9 col-xs-10 col-center" id="poll-nav-container" ng-controller="NavigationController as navCtrl">
+				
+				<div class="row text-center" id="poll-nav-row">
+					<div class="col-lg-6 col-md-7 col-sm-9 col-xs-12 col-center" id="poll-nav-container" ng-controller="NavigationController as navCtrl">
 						<ul class="nav nav-tabs nav-justified" id="poll-nav">
-							<li role="presentation" ng-class="{ 'active': isActive('/') }" ng-cloak><a href="#/">All Polls</a></li>
-							<li role="presentation" ng-class="{ 'active': isActive('/user/polls') }" ng-show="loggedIn" ng-cloak><a href="#/user/polls">Your Polls</a></li>
-							<li role="presentation" ng-class="{ 'active': isActive('/new/poll') }" ng-show="loggedIn" ng-cloak><a href="#/new/poll">New Poll</a></li>
-							<li role="presentation" ng-class="{ 'active': isActive('/about') }" ng-cloak><a href="#/about">About</a></li>
+							<li role="presentation" ng-class="{ 'active': isActive('/') }" ng-cloak>
+								<a href="#/">
+									All Polls
+								</a>
+							</li>
+							<li role="presentation" ng-class="{ 'active': isActive('/user/polls') }" ng-show="loggedIn" ng-cloak>
+								<a href="#/user/polls">
+									Your Polls
+								</a>
+							</li>
+							<li role="presentation" ng-class="{ 'active': isActive('/new/poll') }" ng-show="loggedIn" ng-cloak>
+								<a href="#/new/poll">
+									New Poll
+								</a>
+							</li>
+							<li role="presentation" ng-class="{ 'active': isActive('/about') }" ng-cloak>
+								<a href="#/about">
+									About
+								</a>
+							</li>
 						</ul> 
 					</div>
 				</div>
+				
 			</div>
 			
 			<div class="container" id="view-container" ng-view></div> <!-- Angular Routing Area -->
