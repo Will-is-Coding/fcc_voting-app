@@ -3,12 +3,12 @@
     angular.module('VotingApp').config(function($routeProvider) {
         $routeProvider.when('/', {
             templateUrl: 'public/templates/pages/home/index.html',
-            controller: 'TruePollController',
+            controller: 'PollsController',
         })
         
         .when('/poll/:id', {
             templateUrl: 'public/templates/pages/poll/single.html',
-            controller: 'TruePollController',
+            controller: 'PollsController',
         })
         
         .when('/new/poll', {
@@ -16,7 +16,6 @@
             controller: 'PollCreationController',
             authorize: true
         })
-        
         
         .when('/login', {
             templateUrl: 'public/templates/pages/login/index.html',

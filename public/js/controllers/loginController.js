@@ -1,11 +1,11 @@
 'use strict';
-//TODO: Form verification
+
 (function() {
     angular.module('VotingApp').controller('LoginController', [ '$http', '$scope', '$location', 'userService', 'navService', function($http, $scope, $location, userService, navService) {
-        $scope.message = "";
-        $scope.userError = false;
+        $scope.message          = "";
+        $scope.userError        = false;
         $scope.userErrorMessage = "";
-        $scope.passwordError = false;
+        $scope.passwordError    = false;
         
         
         
@@ -31,12 +31,12 @@
             }
         };
         
-        //TODO: Move to userService?
+       //TODO: Move to userService?
         $scope.attemptLogin = function(user) {
-            console.log(user);
+
             $http({ method: 'POST', url: '/api/user/signin', data: JSON.stringify(user) })
                 .then( function successCB(response) {
-                    console.log(response);
+
                     if( response.status === 200 && response.data.success === true) {
                         userService.setUser(response.data.username, response.data.ipaddress);
                         navService.notify();
@@ -56,5 +56,6 @@
                     throw error;
                 });
         };
+        
     }]);
 })();

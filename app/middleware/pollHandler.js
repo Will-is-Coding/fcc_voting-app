@@ -1,13 +1,6 @@
 'use strict';
 (function() {
-	/*************************************
-	 * 
-	 * TODO: 
-	 * Check upper and lowercase creator name and username
-	 * When fetching all polls, only return those that are not secret
-	 * 
-	 * 
-	 * **********************************/
+
     var moment = require('moment');
 
     var Poll = require('../models/poll.js');
@@ -142,7 +135,7 @@
         },
 
         fetchAllPolls: function(req, res) {
-            Poll.find({}).exec( function(err, results) {
+            Poll.find({secret: false}).exec( function(err, results) {
 				if (err) {
 					res.status(200).json(err);
 					throw err;

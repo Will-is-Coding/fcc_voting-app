@@ -161,12 +161,16 @@ header ul > li {
 }
 
 
+/********************
+*       
+*      Footer
+*
+********************/
 
 #footer {
   min-height: 30px;
   background-color: #ff7f0e;
   display: flex;
-  flex-directon: row;
   flex-wrap: nowrap;
   justify-content: center;
 }
@@ -179,9 +183,6 @@ header ul > li {
   line-height: 30px;
 }
 
-#toTop {
-  
-}
 
 #toTop a:hover {
   cursor: pointer;
@@ -191,17 +192,19 @@ header ul > li {
   font-size: 25px;
 }
 
-#copyright {
-  
-}
 
-/*Container for ng-view*/
+/**************************
+*
+*   Main View Controller 
+*
+**************************/
 #view-container {
   height:100%;
   background-color: #fff;
   border-top: 1px solid #fff;
   z-index: 0;
 }
+
 
 /*******************
 *
@@ -239,6 +242,10 @@ header ul > li {
 .poll-chart-area {
   height: 10px;
   background-color: #06467F;
+}
+
+.loading {
+  min-height: 150px;
 }
 
 /**************

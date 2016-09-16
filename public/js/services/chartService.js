@@ -1,7 +1,8 @@
 'using strict';
 (function() {
-    angular.module('VotingApp').factory('chartFactory', [ function() {
-        var chart = {};
+    angular.module('VotingApp').service('chartService', [ function() {
+        var chart = this;
+        
         var legendRectSize = 18;
         var legendSpacing = 4;
         
@@ -219,7 +220,6 @@
             var path = poll.chart.path;
             var arc = poll.chart.arc;
             var radius = poll.chart.radius;
-            var ttip = poll.chart.ttip;
             
             if( !hasVotes(newOptions) && !add ) {
               color = d3.scale.category20();
@@ -454,7 +454,6 @@
         };
 
         
-        return chart;
     }]);
 })();
 

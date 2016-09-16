@@ -1,6 +1,6 @@
 'use strict';
 (function() {
-	angular.module('VotingApp').service('pollService', [ '$http', '$routeParams', 'chartFactory', 'userService', function($http, $routeParams, chartFactory, userService) {
+	angular.module('VotingApp').service('pollService', [ '$http', '$routeParams', 'chartService', 'userService', function($http, $routeParams, chartFactory, userService) {
 		
 		this.userLoggedIn = false;
 		this.username = '';
@@ -12,13 +12,14 @@
 			this.optText = text;
 		}
 		
-		this.getUserStatus = function(error, username, ipaddress) {
+		this.getUserStatus = function(error, username, ipaddress, admin) {
 			if( error )
 				throw error;
 			else if( username !== '' ) {
 				that.username = username;
 				that.userLoggedIn = true;
 				that.ipaddress = ipaddress;
+				that.admin = admin;
 			}
 		};
 		
@@ -26,6 +27,9 @@
 		
 		//Check for IP Address too; Check if user is creator of poll
 		var userHasVoted = function(poll) {
+			if( that.admin )
+				return false;
+				
 			var voterIndexIfUserAdded   = poll.voters.findIndex( voter => voter.username === that.username || voter.ipaddress === that.ipaddress );
 
 			if( voterIndexIfUserAdded !== -1 ) {
@@ -39,7 +43,7 @@
 		};
 		
 		var userAlreadyAddedOption = function(poll) {
-			if( that.userLoggedIn ) {
+			if( that.userLoggedIn) {
 				var optionIndexIfAdded = poll.options.findIndex( option => option.addedBy && option.addedBy === that.username );
 				if( optionIndexIfAdded !== -1 ) {
 					poll.userAddedOptionID = poll.options[optionIndexIfAdded]._id;
@@ -67,10 +71,11 @@
 		
 		//Use .findIndex?
 		this.isUniqueOption = function(newOption, poll) {
-			for( var i = 0; i < poll.options.length; i++ ) {
-				if( poll.options[i].vote.toLowerCase() === newOption.toLowerCase() )
-					return false;
-			}
+			var indexOfOption = poll.options.findIndex( option => option.vote.toLowerCase() === newOption.toLowerCase() );
+			
+			if( indexOfOption !== -1 )
+				return false;
+			
 			return true;
 		};
 		

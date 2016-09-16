@@ -1,17 +1,18 @@
 'use strict';
-/** Make A Provider? **/
+
 (function() {
-    angular.module("VotingApp").service('userService', ['$http', '$rootScope', function($http, $rootScope, menuService) {
-        var user = { username: '', ipaddress: '', admin: false, polls: [] };
+    angular.module("VotingApp").service('userService', ['$http', '$rootScope', function($http, $rootScope) {
+        var user = { username: '', ipaddress: '', admin: false  };
         var that = this;
+        
         this.requestUsername = function( passUsername ) {
             $http({method: 'GET', url: '/api/user/verify'})
                 .then( function successCB(response) {
                     if ( response.data.username !== undefined ) {
                         $rootScope.username = response.data.username;
-                        console.log(response.data);
-                        that.setUser(response.data.username, response.data.ipaddress);
-                        passUsername( null, response.data.username, response.data.ipaddress );
+
+                        that.setUser(response.data.username, response.data.ipaddress, response.data.admin);
+                        passUsername( null, response.data.username, response.data.ipaddress, response.data.admin );
                     }
                 }, function errorCB(error) {
                     if (error) {
@@ -21,17 +22,18 @@
                 });
         };
         
-        this.setUser = function(username, ip) {
-            user.username = username;
-            user.ipaddress = ip;
+        this.setUser = function(username, ip, admin) {
+            user.username   = username;
+            user.ipaddress  = ip;
+            user.admin      = admin;
             $rootScope.username = username;
         };
         
         this.getUsername = function(passUsername) {
-            if( user.username === '' || user.ipaddress === '')
+            if( user.username === '' || user.ipaddress === '' || user.username === undefined || user.ipaddress === undefined )
                 return this.requestUsername( passUsername );
                 
-            return passUsername( null, user.username, user.ipaddress );
+            return passUsername( null, user.username, user.ipaddress, user.admin );
         };
         
         

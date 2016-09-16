@@ -132,12 +132,18 @@
     			</div>
     			<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
     				<div class="input-group pull-right">
+    				    <span class="input-group-btn">
+    				        <a ng-href="{{poll.url}}"><button class="btn btn-secondary btn-info share" type="button">Open</button></a>
+    				    </span>
+    				    
     					<input id="poll-link" type="text" class="form-control" value="{{poll.url}}" select-on-click readonly>
+    					
     					<span class="input-group-btn">
     						<button class="btn btn-secondary btn-info share" type="button" ngclipboard data-clipboard-text="{{poll.url}}"
 							popover-animation="true" uib-popover="Copied!" popover-trigger="click outsideClick">Share</button>
     					</span>
     				</div>
+    				
     			</div>
 		    </div>
         </uib-accordion-group>

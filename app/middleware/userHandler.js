@@ -176,6 +176,7 @@
     				
     				if(user) {
     					user.admin = true;
+    					user.save();
     					res.status(200).json({message: "User successfully given admin privleges", success: true});
     				}
     				else

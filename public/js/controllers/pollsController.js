@@ -1,7 +1,7 @@
 (function() {
     'use strict';
     
-    angular.module('VotingApp').controller('TruePollController', ['$http', '$scope', '$routeParams', 'pollService', function($http, $scope, $routeParams, pollService) {
+    angular.module('VotingApp').controller('PollsController', ['$http', '$scope', '$routeParams', 'pollService', function($http, $scope, $routeParams, pollService) {
         
         var votedFor = '';
         var tempPoll = null;
@@ -77,14 +77,14 @@
             else {
                 tempPoll.voteMessage.error = true;
                 tempPoll.voteMessage.submitted = false;
-                console.log(error);
+                throw error;
             }
         };
         
         $scope.vote = function(poll) {
             tempPoll = poll;
             votedFor = poll.userVote._id;
-            console.log(poll.userVote);
+            
             if( poll.userVote ) {
                 
                 pollService.submitVote(poll.userVote.vote, poll, poll.userVote._id, handleVoteResponse);

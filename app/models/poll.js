@@ -32,7 +32,6 @@ var pollSchema = new Schema( {
         unix: String,
         human: String
     },
-    draft: Boolean,
     secret: Boolean
 });
 
