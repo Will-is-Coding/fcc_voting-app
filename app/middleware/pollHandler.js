@@ -486,7 +486,7 @@
         },
         
         rawPolls: function(req, res) {
-        	//if( req.admin ) {
+        	if( req.admin ) {
         		Poll.find({}, function(err, polls) {
         			if( err ) {
         				res.status(200).json({error: err, success: false});
@@ -494,8 +494,8 @@
         			}
         			res.status(200).json(polls);
         		});
-        	//}
-        	//res.status(200).json({message: "Must be an admin", success: false});
+        	}
+        	res.status(200).json({message: "Must be an admin", success: false});
         },
         
         deleteAll: function(req, res) {
@@ -505,7 +505,7 @@
         				res.status(200).json({error: err, success: false});
         			}
         			
-        			res.status(200).end();
+        			res.status(200).json({success: true, message: "All polls deleted."});
         		});
         	}
         	else
