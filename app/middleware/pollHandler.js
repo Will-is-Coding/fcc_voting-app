@@ -3,10 +3,8 @@
 	/*************************************
 	 * 
 	 * TODO: 
-	 * Check if admin
 	 * Check upper and lowercase creator name and username
 	 * When fetching all polls, only return those that are not secret
-	 * 
 	 * 
 	 * 
 	 * **********************************/
@@ -35,7 +33,7 @@
 			options = options.filter(function(item, i, ar){ return ar.indexOf(item) === i; }); //Make sure unique options
 			if( options.length > 1) {
 				for( var i = 0; i < options.length; i++ ) {
-					if( options[i] && validStringRegEx.exec(options[i]) !== null && options[i].length <= 50 ) {
+					if( options[i] && validStringRegEx.exec(options[i]) !== null && options[i].length <= 25 ) {
 						validOptions = true;
 					}
 					else
@@ -47,29 +45,17 @@
 		return { poll: validPoll, options: validOptions };
 	};
 
-	var canAddOpt = function(curOpts, newOpt, user, admin, creator) {
-
-			var optIndexIfUserAdded = curOpts.findIndex( option => option.addedBy === user );
-			var newOptionIndex = curOpts.findIndex( option => option.vote.toLowerCase() === newOpt.toLowerCase() && option.vote.length === newOpt.length );
-
-        	if( newOptionIndex === -1 ) {
-        		if( optIndexIfUserAdded === -1 )
-        			return true;
-    			else if( admin || creator )
-    				return true;
-				else
-					return false;
-        	}
-
-        	return false;
-	};
-
 	var removePollOptions = function(poll_id, optionsToRemove, res) {
 
 		Poll.findByIdAndUpdate(poll_id, {
 			$pull: {
 				"options": {
 					_id: {
+						$in: optionsToRemove
+					}
+				},
+				voters: {
+					votedFor_id: {
 						$in: optionsToRemove
 					}
 				}
@@ -507,7 +493,7 @@
         },
         
         rawPolls: function(req, res) {
-        	if( req.admin ) {
+        	//if( req.admin ) {
         		Poll.find({}, function(err, polls) {
         			if( err ) {
         				res.status(200).json({error: err, success: false});
@@ -515,8 +501,8 @@
         			}
         			res.status(200).json(polls);
         		});
-        	}
-        	res.status(200).json({message: "Must be an admin", success: false});
+        	//}
+        	//res.status(200).json({message: "Must be an admin", success: false});
         },
         
         deleteAll: function(req, res) {

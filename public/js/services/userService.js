@@ -9,7 +9,8 @@
                 .then( function successCB(response) {
                     if ( response.data.username !== undefined ) {
                         $rootScope.username = response.data.username;
-                        that.setUsername(response.data.username, response.data.ipaddress);
+                        console.log(response.data);
+                        that.setUser(response.data.username, response.data.ipaddress);
                         passUsername( null, response.data.username, response.data.ipaddress );
                     }
                 }, function errorCB(error) {
@@ -20,7 +21,7 @@
                 });
         };
         
-        this.setUsername = function(username, ip) {
+        this.setUser = function(username, ip) {
             user.username = username;
             user.ipaddress = ip;
             $rootScope.username = username;

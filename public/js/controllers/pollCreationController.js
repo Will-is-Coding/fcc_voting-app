@@ -6,6 +6,7 @@
 		$scope.created          = false;
 		$scope.creationError	= false;
 		$scope.creationMessage	= "";
+		$scope.badPollMessage	= "";
 		$scope.newOptionsValid	= false;
 		$scope.tempOptions		= [];
 		
@@ -22,8 +23,11 @@
 				$scope.creationError = false;
 				$scope.pollError = false;
 			}*/
-			$scope.creationError = false;
-			$scope.pollError = false;
+			$scope.creationError	= false;
+			$scope.pollError		= false;
+			$scope.optionsError		= false;
+			$scope.badPollMessage	= "";
+			$scope.message			= "";
 		};
 		
 		$scope.checkIfUnique = function(newOption) {
@@ -97,6 +101,7 @@
 				$scope.created = false;
 				$scope.message = "Error!";
 				console.log(err);
+				console.log(response.err);
 				$scope.creationError = true;
 			}
 			else if( response.success ) {
@@ -126,7 +131,8 @@
 			}
 			else {
 				$scope.created = false;
-				$scope.message = "Your poll question is either not valid or you don't have two or more options added";
+				$scope.creationError = true;
+				$scope.badPollMessage = "Your poll question is either not valid or you don't have two or more options added";
 			}
 		};
 		

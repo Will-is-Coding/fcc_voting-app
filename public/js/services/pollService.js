@@ -4,6 +4,7 @@
 		
 		this.userLoggedIn = false;
 		this.username = '';
+		this.ipaddress = '';
 		
 		var that = this;
 		
@@ -81,6 +82,7 @@
 					.then( function successCB(response) {
 						
 						if( response.data.success ) {
+							console.log(response.data.options);
 							chartFactory.editOptions(poll, response.data.options, true);
 							chartFactory.editPoll(poll, response.data.options, false);
 						}
@@ -117,12 +119,18 @@
 		};
 		
 		
-		this.updateOptions = function(newOptions, removedOptions, allOptions, poll_id, poll_creator, handlePollEdition) {
+		this.updateOptions = function(poll, newOptions, removedOptions, allOptions, poll_id, poll_creator, handlePollEdition) {
 			var updateInfo = { _id: poll_id, newOptions: newOptions, removedOptions: removedOptions, options: allOptions, creator: poll_creator };
 			
 			$http({method: 'PUT', url: '/api/poll/' + poll_id, data: JSON.stringify(updateInfo)})
 				.then( function successCB(response) {
 					console.log(response);
+					if( response.data.success ) {
+						console.log('here');
+						chartFactory.editOptions(poll, response.data.options, false);
+						chartFactory.editPoll(poll, response.data.options, false);
+					}
+						
 					handlePollEdition(null, response.data);
 					
 				}, function errorCB(error) {
@@ -131,16 +139,20 @@
 				});
 		};
 		
-		this.createPoll = function(question, optionData, secret, draft, handlePollCreation) {
+		this.createPoll = function(question, optionData, secret, handlePollCreation) {
 
-			var newPoll = { question: question, options: optionData, secret: secret, draft: draft };
+			var newPoll = { question: question, options: optionData, secret: secret };
 
 			$http({method:'PUT', url: '/api/poll/new', data: JSON.stringify(newPoll) })
 				.then( function successCB(response) {
 					console.log(response);
 					handlePollCreation(null, response.data);
 				},
-				function errorCB(error) { handlePollCreation(error, null); throw error; });
+				function errorCB(error) { 
+					handlePollCreation(error, null);
+					throw error; 
+					
+				});
 		};
 		
 		this.fetchPoll = function(pollID, handlePoll) {

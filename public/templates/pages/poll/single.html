@@ -3,14 +3,14 @@
         <h3>{{ poll.question }}</h3>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 poll-information">
-        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
-            <h4>Created By {{ poll.creator.name }}</h4>
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 poll-creator">
+            <h4 class="pull-left">Created By {{ poll.creator.name }}</h4>
         </div>
-        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 poll-votes text-center">
             <h4>With {{ poll.totalVotes }} Vote(s)</h4>
         </div>
-        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 text-center">
-            <h4>On {{ poll.creationDate.human }}</h4>
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 poll-date">
+            <h4 class="pull-right">On {{ poll.creationDate.human }}</h4>
         </div>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
@@ -24,15 +24,21 @@
 						<h4>Results</h4>
 					</div>
 				</div>
-				<div class="row row-centered">
+				<!--<div class="row row-centered">
 					<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4 col-centered" ng-repeat="option in poll.options">
 						<b>{{option.vote}}: </b> <span>{{option.count}}</span>
 					</div>
+				</div>-->
+				<div class="row result-options">
+					<ul class="list-inline">
+						<li ng-repeat="option in poll.options"><b>{{option.vote}}</b>: {{option.count}}</li>
+					</ul>
 				</div>
 			</div>
 			<form name="voteForm" ng-submit="vote(poll)" class="single-poll-form" novalidate>
 				<div class="form-group has-feedback"
 				ng-class="{'has-success': (poll.voteMessage.submitted || poll.voteMessage.removed) && !poll.voteMessage.error, 'has-error': (!poll.voteMessage.submitted) && (poll.voteMessage.error || poll.alreadyVoted) }">
+					
 					<label for="voteOption" class="pull-left">Your Vote</label>
 					<select class="form-control" id="voteOption" name="voteOption" 
 					ng-model="poll.userVote" 
@@ -61,10 +67,9 @@
 					ng-model="userNewOption.text" ng-init="userNewOption.unique = true"
 					ng-change="checkIfUnique(userNewOption, $index, true)"
 					class="form-control"
-					ng-class=""
 					placeholder="{{createPlaceholder(poll)}}"  
 					ng-minlength="1"
-					ng-maxlength="50"
+					ng-maxlength="25"
 					aria-describedby="" 
 					ng-disabled="!loggedIn || poll.alreadyAdded" 
 					required>
@@ -77,7 +82,7 @@
 					<span ng-show="addOptForm.newOption.$error.maxlength" class="help-block">A valid option must be between 1 and 50 characters</span>
 					<span ng-show="addOptForm.newOption.$dirty && !userNewOption.unique" class="help-block">This option is already available</span>
 					<span ng-show="poll.addOptResponse.submitted" class="help-block">{{poll.addOptResponse.message}}</span>
-					<span ng-show="poll.removeOptResponse.submitted" class="help-block">{{poll.removeOptResponse.message}}</span>
+					<span ng-show="displayMessage( userNewOption.text, poll, 'removeOptResponse' )" class="help-block">{{poll.removeOptResponse.message}}</span>
 					<span ng-show="poll.addError" class="help-block">{{poll.addOptResponse.message}}</span>
 				</div>
 					<button type="submit" class="btn"

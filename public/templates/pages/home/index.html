@@ -59,7 +59,7 @@
 						</div>
 					</div>
 					
-					<form ng-submit="vote(poll, $index)">
+					<form ng-submit="vote(poll)">
 						<div class="form-group has-feedback"
 							ng-class="{'has-success': (poll.voteMessage.submitted || poll.voteMessage.removed) && !poll.voteMessage.error, 'has-error': (!poll.voteMessage.submitted) && (poll.voteMessage.error || poll.alreadyVoted) }">
 							
@@ -93,7 +93,7 @@
 							ng-change="checkIfUnique(userNewOption, $index, false)"
 							placeholder="{{createPlaceholder(poll)}}" 
 							ng-minlength="1" 
-							ng-maxlength="50"
+							ng-maxlength="25"
 							aria-describedby="" 
 							ng-disabled="!loggedIn || poll.alreadyAdded" 
 							required="required" ng-cloak>
@@ -126,7 +126,7 @@
 						<input id="poll-link" type="text" class="form-control" value="{{poll.url}}" select-on-click readonly>
 						<span class="input-group-btn">
 							<button class="btn btn-secondary btn-info share" type="button" ngclipboard data-clipboard-text="{{poll.url}}"
-							popover-animation="true" uib-popover="Copied!" popover-trigger="outsideClick">Share</button>
+							popover-animation="true" uib-popover="Copied!" popover-trigger="click outsideClick">Share</button>
 						</span>
 					</div>
 				</div>

@@ -5,6 +5,9 @@
         var legendRectSize = 18;
         var legendSpacing = 4;
         
+        var chartNum = 0;
+        var firstWidth = 0;
+        
         var hasVotes = function(options) {
           for(var i = 0; i < options.length; i++) {
             if (options[i].count > 0)
@@ -17,7 +20,15 @@
           console.log(id);
 
           var width = $(id).width(), height = 400;
-          console.log(width);
+          
+          if( chartNum === 0 )
+            firstWidth = width;
+            
+          if( firstWidth !== width && chartNum !== 0)
+            width = firstWidth;
+            
+          chartNum++;
+            
           poll.chart.radius = Math.min(width, height) / 2;
           poll.chart.color = d3.scale.category20();
   
@@ -80,8 +91,8 @@
                   poll.chart.ttip.style('display', 'none');
               })
               .on('mousemove', function(d) {
-                  poll.chart.ttip.style('top', (d3.event.layerY + 10) + 'px')
-                    .style('left', (d3.event.layerX + 10) + 'px');
+                  poll.chart.ttip.style('top', (d3.event.layerY + 15) + 'px')
+                    .style('left', (d3.event.layerX + 20) + 'px');
               })
               .transition()
               .duration(500)
@@ -170,12 +181,14 @@
         
         chart.editOptions = function(poll, newOptions, add) {
           
-          if( !add )
-            poll.chart.color = d3.scale.category20();
+          poll.chart.color = d3.scale.category20();
+          
           
           for( var i = 0; i < newOptions.length; i++ ) {
               poll.chart.color(newOptions[i].vote);
             }
+            
+          console.log(poll.chart.color.domain());
           
           poll.chart.path = poll.chart.svg.selectAll('path')
               .data(poll.chart.pie(newOptions))
@@ -266,7 +279,7 @@
               });
               
             }
-            
+            console.log(poll.chart.color.domain());
             path.on('mouseover', function(d) {
               console.log(d);
                   var total = d3.sum(data.map(function(d) {
@@ -276,7 +289,7 @@
                   var percent = Math.round(1000 * d.data.count/total) / 10;
                   
                   poll.chart.ttip.select('.vote').html(d.data.vote);
-                  console.log(d.data.vote === "No Votes");
+
                   if( d.data.vote !== "No Votes") {
                     poll.chart.ttip.select('.count').html(d.data.count + ' vote(s)');
                     poll.chart.ttip.select('.percent').html(percent + "%");
@@ -291,9 +304,9 @@
                   poll.chart.ttip.style('display', 'none');
               })
               .on('mousemove', function(d) {
-                  poll.chart.ttip.style('top', (d3.event.layerY + 10) + 'px')
-                    .style('left', (d3.event.layerX + 10) + 'px');
-              })
+                  poll.chart.ttip.style('top', (d3.event.layerY + 15) + 'px')
+                    .style('left', (d3.event.layerX + 20) + 'px');
+              });
             
             if( !hasVotes(newOptions) && !add) {
               path = svg.selectAll('path')
@@ -392,8 +405,6 @@
           
           data.forEach(function(d) { d.enabled = true; });
           
-          console.log(color.domain());
-          console.log(pie(data));
           /*path = svg.selectAll('path')
               .data(pie(data))
               .enter()

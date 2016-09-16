@@ -8,6 +8,7 @@
         $scope.passwordError = false;
         
         
+        
         $scope.passwordEmpty = function() {
             if( $scope.user.password === undefined && $scope.passwordError )
                 $scope.passwordError = false;
@@ -37,7 +38,7 @@
                 .then( function successCB(response) {
                     console.log(response);
                     if( response.status === 200 && response.data.success === true) {
-                        userService.setUsername(response.data.username);
+                        userService.setUser(response.data.username, response.data.ipaddress);
                         navService.notify();
                         $location.url('/');
                     }

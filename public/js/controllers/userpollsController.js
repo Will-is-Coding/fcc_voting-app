@@ -57,10 +57,9 @@
 			if(error)
 				throw error;
 			
-			console.log($rootScope.username);
 			$scope.loaded = true;
 			
-			if( polls ) {
+			if( polls && polls.length > 0 ) {
 				$scope.myPolls = polls;
 				setupMyPollsOptions();
 			}
@@ -79,7 +78,7 @@
 				poll.displaying = true;
 			}
 
-			if( $(id + " > svg").length === 0 ) {
+			if( $(id + " > .svg-container > svg").length === 0 ) {
 				pollService.buildChart(poll, id);
 			}
 		};
@@ -128,6 +127,7 @@
 				}
 				
 				tempPoll.options = response.options;
+				console.log(tempPoll.options);
 			}
 				
 			tempPoll.newOptions.push( new _option() );
@@ -178,7 +178,8 @@
 				
 				if( (poll.newOptions.length > 0 || poll.removedOptions.length > 0) && optionsChanged(poll) ) {
 					poll.newOptions.pop();
-					pollService.updateOptions( cleanNewOptions(poll.newOptions), poll.removedOptions, poll.options, poll._id, poll.creator.name, handlePollEdition );
+					pollService.updateOptions(poll, cleanNewOptions(poll.newOptions), poll.removedOptions, poll.options, poll._id, poll.creator.name, handlePollEdition );
+					
 				}
 				
 				if( poll.clearVotes && poll.totalVotes > 0 ) {

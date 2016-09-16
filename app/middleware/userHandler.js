@@ -138,7 +138,8 @@
 									token: token,
 									expires: expires,
 									username: user.username,
-									admin: user.admin
+									admin: user.admin,
+									ipaddress: req.ipaddress
 								});
 							}
 							else {
