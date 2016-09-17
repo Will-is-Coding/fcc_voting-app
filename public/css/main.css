@@ -1,6 +1,13 @@
+html, body {
+  height: 100%
+}
+
 body {
   overflow-x: hidden;
   background-color: #c7c7c7 !important;
+  position: relative;
+  padding-bottom: 40px;
+  min-height: 100%;
 }
 
 .col-center {
@@ -167,29 +174,45 @@ header ul > li {
 *
 ********************/
 
+.main {
+  min-height: 100%
+}
+
+#view-container {
+  overflow: auto;
+  
+}
+
 #footer {
-  min-height: 30px;
+  height: 40px;
+  line-height: 50px !important;
+  clear: both;
+  position: relative;
+}
+
+#footer .row {
   background-color: #ff7f0e;
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: center;
 }
 
-#footer-nav li {
-  margin-right: 20px;
+#top-contain {
+  z-index: 10;
 }
 
-#footer-nav li, #copyright, #toTop a > i {
-  line-height: 30px;
+#topArrow {
+  margin-right: -30px;
 }
 
-
-#toTop a:hover {
+#topArrow:hover, #topArrow i:hover {
   cursor: pointer;
 }
 
-#toTop a > i {
-  font-size: 25px;
+#topArrow i {
+  font-size: 30px;
+  line-height: 40px !important;
+}
+
+#copy-contain span {
+  margin-right: 10%;
 }
 
 
