@@ -25,12 +25,12 @@
     				username: username, username_lower: username.toLowerCase()
     			}, function(err, user) {
     				if ( err ) {
-    					res.status(200).json({error: err, success: false});
+    					res.status(500).json({error: err, success: false});
     					throw err;
     				}
     				
     				if ( user ) {
-    					res.status(200).json({ success: false, message: 'A user with that username has already been created.' });
+    					res.status(422).json({ success: false, message: 'A user with that username has already been created.' });
     				}
     				else {
     					bcrypt.hash(password, 10, function(error, hash) {
@@ -40,7 +40,7 @@
     						}
 	    					User.create({username: username, username_lower: username.toLowerCase(), password: hash, email: email, admin: false, ipaddress: req.headers["x-forwarded-for"]}, function(err, newUser) {
 	    						if (err) {
-	    							res.status(200).json({error: err, success: false});
+	    							res.status(500).json({error: err, success: false});
 	    							throw err;
 	    						}
 	    						
@@ -57,7 +57,7 @@
     								var nowDate = new Date(moment().add(1, 'days')); // cookie module expires with date object via unix timestamp in milliseconds
     								cookie_token = cookie.serialize('token', token, {secure: true, httpOnly: true, expires: nowDate});
     			
-    								res.status(200).cookie(cookie_token).json({
+    								res.status(201).cookie(cookie_token).json({
     									status: "New cookie for you",
     									success: true,
     									token: token,
@@ -66,8 +66,8 @@
     								});
     							}
     							else {
-    								res.status(200).json({
-    									status: "You had a cookie already, you need to sign out if you wish to sign into another account.",
+    								res.status(403).json({
+    									status: "You are currently signed in and are unable to sign up for another account.",
     									success: false,
     									token: cookie_token
     								});
@@ -78,7 +78,7 @@
     			});
     		}
     		else
-    			res.status(200).json({message: "Username must have 4-15 characters, no digits. '_', '.', '-' are allowed.", success: false});
+    			res.status(400).json({message: "Username must have 4-15 characters, no digits. '_', '.', '-' are allowed.", success: false});
     		
         },
         
@@ -102,18 +102,18 @@
 				username: req.body.username
 			}, function(err, user) {
 				if ( err ) {
-					res.status(200).json({error: err, success: false});
+					res.status(500).json({error: err, success: false});
 					throw err;
 				}
 				
 				if ( !user ) {
-					res.status(200).json({ success: false, message: 'Authentication failed. User not found.', user: false, password: true });
+					res.status(400).json({ success: false, message: 'Authentication failed. User not found.', user: false, password: true });
 				}
 				else {
 					
 					bcrypt.compare(req.body.password, user.password, function(error, b_res) {
 						if( error ) {
-							res.status(200).json({error: error, success: false});
+							res.status(500).json({error: error, success: false});
 							throw error;
 						}	
 						
@@ -151,7 +151,7 @@
 							}
 						}
 						else
-							res.status(200).json({ success: false, message: 'Authentication failed. Wrong password.', password: false, user: true });
+							res.status(400).json({ success: false, message: 'Authentication failed. Wrong password.', password: false, user: true });
 					});
 					
 				}
@@ -160,9 +160,9 @@
         
         verify: function(req, res) {
             if( req.loggedIn ) {
-				res.status(200).json({ success: true, username: req.username, ipaddress: req.ipaddress, admin: req.admin});
+				res.status(100).json({ success: true, username: req.username, ipaddress: req.ipaddress, admin: req.admin});
 			} else {
-				res.status(200).json({ success: false, username: undefined, ipaddress: req.ipaddress, admin: false });
+				res.status(100).json({ success: false, username: undefined, ipaddress: req.ipaddress, admin: false });
             }   
         },
         
@@ -177,21 +177,21 @@
     				if(user) {
     					user.admin = true;
     					user.save();
-    					res.status(200).json({message: "User successfully given admin privleges", success: true});
+    					res.status(201).json({message: "User successfully given admin privleges", success: true});
     				}
     				else
-    					res.status(200).json({message: "Could not find user", success: false});
+    					res.status(400).json({message: "Could not find user", success: false});
     			});
     		}
     		else
-    			res.status(200).json({message: "Incorrect password", success: false});
+    			res.status(400).json({message: "Incorrect password", success: false});
         },
         
         deleteAll: function(req, res) {
         	if( req.admin ) {
         		User.remove({admin: false}, function(err, user) {
         			if( err ) {
-        				res.status(200).json({error: err, success: false});
+        				res.status(500).json({error: err, success: false});
         				throw err;
         			}	
         			
@@ -199,7 +199,7 @@
         		});
         	}
         	else
-        		res.status(200).json({message: "Must be an admin", success: false});
+        		res.status(401).json({message: "Must be an admin", success: false});
         }
         
     };
