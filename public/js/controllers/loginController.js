@@ -37,7 +37,7 @@
             $http({ method: 'POST', url: '/api/user/signin', data: JSON.stringify(user) })
                 .then( function successCB(response) {
 
-                    if( response.status === 200 && response.data.success === true) {
+                    if( response.data.success === true) {
                         userService.setUser(response.data.username, response.data.ipaddress);
                         navService.notify();
                         $location.url('/');
