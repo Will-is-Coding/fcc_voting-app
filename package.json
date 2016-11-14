@@ -7,7 +7,7 @@
     "type": "git",
     "url": "git+https://github.com/Will-is-Coding/fcc_voting-app"
   },
-  "homepage": "http://www.clementinejs.com/",
+  "homepage": "https://github.com/Will-is-Coding/fcc_voting-app",
   "bugs": "https://github.com/Will-is-Coding/fcc_voting-appissues",
   "keywords": [
     "MongoDB",
@@ -21,7 +21,7 @@
   "scripts": {
     "start": "node server.js"
   },
-  "author": "Blake Johnston",
+  "author": "William Ingold",
   "license": "MIT",
   "dependencies": {
     "angular": "^1.5.7",
