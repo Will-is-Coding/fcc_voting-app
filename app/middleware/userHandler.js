@@ -4,8 +4,9 @@
     var jwt             = require('jsonwebtoken');
     var cookie          = require('cookie');
     var bcrypt			= require('bcryptjs');
-    var config          = require('../../config.js');
     var User            = require('../models/users.js');
+    var secret			= process.env['SECRET'];
+    var password		= process.env['PASSWORD'];
     
     /******************
      *
@@ -52,7 +53,7 @@
     									exp: expires,
     									sub: newUser._id,
     									username: newUser.username
-    								}, config.secret);
+    								}, secret);
     							
     								var nowDate = new Date(moment().add(1, 'days')); // cookie module expires with date object via unix timestamp in milliseconds
     								cookie_token = cookie.serialize('token', token, {secure: true, httpOnly: true, expires: nowDate});
@@ -90,7 +91,7 @@
     							exp: now,
     							sub: req.token.sub,
     							username: req.username
-    						}, config.secret);
+    						}, secret);
     		
     		var nowDate = new Date(moment());
     		req.cookies.token = cookie.serialize('token', expToken, {secure: true, httpOnly: true, expires: nowDate } );
@@ -127,7 +128,7 @@
 									sub: user._id,
 									username: user.username,
 									admin: user.admin
-								}, config.secret);
+								}, secret);
 								
 								var nowDate = new Date(moment().add(1, 'days')); // cookie module expires with date object via unix timestamp in milliseconds
 								cookie_token = cookie.serialize('token', token, {secure: true, httpOnly: true, expires: nowDate});
@@ -167,7 +168,7 @@
         },
         
         setAdmin: function(req, res) {
-    		if( req.params.password === config.password ) {
+    		if( req.params.password === password ) {
     			User.findOne({username: req.params.username}, function(err, user) {
     				if( err ) {
     					res.status(200).json({error: err, success: false});

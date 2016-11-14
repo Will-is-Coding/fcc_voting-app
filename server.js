@@ -12,14 +12,14 @@ var jwt = require('express-jwt');
 var unless = require('express-unless');
 var NotFoundError = require(path.join(__dirname, "errors", "NotFoundError.js"));
 
-var config = require('./config.js');
+var secret = process.env['SECRET'];
 
 
 var app = express();
 require('dotenv').load();
 
 mongoose.connect(process.env.MONGO_URI);
-app.set('superSecret', config.secret);
+app.set('superSecret', secret);
 
 app.use(morgan('dev'));
 app.use(bodyParser.json());
@@ -39,33 +39,6 @@ app.use('/public', express.static(process.cwd() + '/public'));
 app.use('/common', express.static(process.cwd() + '/app/common'));
 app.use('/services', express.static(process.cwd() + '/app/services'));
 app.use('/factories', express.static(process.cwd() + '/app/factories'));
-
-/*app.all("*", function(req, res, next) {
-    next(new NotFoundError('404'));
-});*/
-
-/*app.use(function (err, req, res, next) {
-    var errorType = typeof err,
-        code = 500,
-        msg = { message: "Internal Server Error" };
-        
-    switch (err.name) {
-        case "UnauthorizedError":
-            code = err.status;
-            msg = undefined;
-            break;
-        case "BadRequestError":
-        case "UnauthorizedAccessError":
-        case "NotFoundError":
-            code = err.status;
-            msg = err.inner;
-            break;
-        default:
-            break;
-    }
-    
-    return res.status(code).json(msg);
-});*/
 
 routes(app);
 

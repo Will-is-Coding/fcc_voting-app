@@ -1,8 +1,8 @@
 'use strict';
 ( function() {
     var jwt     = require('jsonwebtoken');
-    var config = require('../../config.js');
     var User    = require('../models/users.js');
+    var secret  = process.env['SECRET'];
     
     /******************
      *
@@ -14,7 +14,7 @@
             req.ipaddress = req.headers['x-forwarded-for'];
             var token = req.cookies.token;
     		if (token !== undefined) {
-    			jwt.verify(token, config.secret, function(err, decoded) {
+    			jwt.verify(token, secret, function(err, decoded) {
     				if (err) {
                         console.log(err) ;
     					
