@@ -4,12 +4,9 @@ var express = require('express');
 var routes = require('./app/router/index.js');
 var path = require('path');
 var mongoose = require('mongoose');
-var passport = require('passport');
 var morgan = require('morgan');
 var helmet = require('helmet');
 var bodyParser = require('body-parser');
-var jwt = require('express-jwt');
-var unless = require('express-unless');
 var NotFoundError = require(path.join(__dirname, "errors", "NotFoundError.js"));
 
 var secret = process.env['SECRET'];
