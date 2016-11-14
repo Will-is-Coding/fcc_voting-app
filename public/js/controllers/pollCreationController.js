@@ -112,7 +112,7 @@
 				$scope.message = response.message;
 				$scope.options = [new _option(), new _option()];
 				$scope.poll = "";
-				$scope.newPollUrl = "https://fcc-voting-app-will-is-coding.c9users.io/#/poll/" + response.poll_id;
+				$scope.newPollUrl = "https://fcc-ballotbox.herokuapp.com/#/poll/" + response.poll_id;
 			}
 			else {
 				$scope.created = false;

@@ -8,7 +8,7 @@
         this.requestUsername = function( passUsername ) {
             $http({method: 'GET', url: '/api/user/verify'})
                 .then( function successCB(response) {
-                    console.log(response);
+
                     if ( response.data.username !== undefined ) {
                         $rootScope.username = response.data.username;
                         
@@ -17,7 +17,6 @@
                     }
                 }, function errorCB(error) {
                     if (error) {
-                        console.log(error);
                         passUsername(error, null, null);
                         throw error;
                     }

@@ -59,7 +59,7 @@
 				polls[i].totalVotes = that.totalVotes(polls[i]);
 				polls[i].chart = {};
 				polls[i].voteMessage = { submitted: false, message: "", error: false };   
-				polls[i].url = 'https://fcc-voting-app-will-is-coding.c9users.io/#/poll/' + polls[i]._id;
+				polls[i].url = 'https://fcc-ballotbox.herokuapp.com/#/poll/' + polls[i]._id;
 				polls[i].userVote = polls[i].options[0];
 				polls[i].submitted = false;
 				polls[i].displaying = false;

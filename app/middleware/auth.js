@@ -22,7 +22,7 @@
     					req.token	 = undefined;
     					next();
     				}
-    				console.log('Has a verified cookie!!');
+
     				req.token       = decoded;
     				req.username    = decoded.username;
     				req.admin       = decoded.admin;
@@ -31,7 +31,7 @@
     			});
     			
     		} else {
-    			console.log('No cookie!!');
+
     			req.username = undefined;
     			req.token	 = undefined;
     			next();
