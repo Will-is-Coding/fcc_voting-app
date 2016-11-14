@@ -12,7 +12,7 @@ var secret = process.env.SECRET;
 
 
 var app = express();
-require('dotenv').load();
+//require('dotenv').load();
 
 mongoose.connect(process.env.MONGO_URI);
 app.set('superSecret', secret);
