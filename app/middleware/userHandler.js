@@ -160,10 +160,11 @@
         },
         
         verify: function(req, res) {
+        	console.log(req);
             if( req.loggedIn ) {
-				res.status(100).json({ success: true, username: req.username, ipaddress: req.ipaddress, admin: req.admin});
+				res.status(200).json({ success: true, username: req.username, ipaddress: req.ipaddress, admin: req.admin});
 			} else {
-				res.status(100).json({ success: false, username: undefined, ipaddress: req.ipaddress, admin: false });
+				res.status(200).json({ success: false, username: undefined, ipaddress: req.ipaddress, admin: false });
             }   
         },
         
