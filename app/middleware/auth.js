@@ -2,7 +2,7 @@
 ( function() {
     var jwt     = require('jsonwebtoken');
     var User    = require('../models/users.js');
-    var secret  = process.env['SECRET'];
+    var secret  = process.env.SECRET;
     
     /******************
      *

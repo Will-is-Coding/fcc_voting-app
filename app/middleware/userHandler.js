@@ -5,8 +5,8 @@
     var cookie          = require('cookie');
     var bcrypt			= require('bcryptjs');
     var User            = require('../models/users.js');
-    var secret			= process.env['SECRET'];
-    var password		= process.env['PASSWORD'];
+    var secret			= process.env.SECERT;
+    var password		= process.env.PASSWORD;
     
     /******************
      *

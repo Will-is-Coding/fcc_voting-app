@@ -8,7 +8,7 @@ var helmet = require('helmet');
 var bodyParser = require('body-parser');
 //var NotFoundError = require(path.join(__dirname, "errors", "NotFoundError.js"));
 
-var secret = process.env['SECRET'];
+var secret = process.env.SECRET;
 
 
 var app = express();
