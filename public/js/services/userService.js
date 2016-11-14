@@ -8,14 +8,16 @@
         this.requestUsername = function( passUsername ) {
             $http({method: 'GET', url: '/api/user/verify'})
                 .then( function successCB(response) {
+                    console.log(response);
                     if ( response.data.username !== undefined ) {
                         $rootScope.username = response.data.username;
-
+                        
                         that.setUser(response.data.username, response.data.ipaddress, response.data.admin);
                         passUsername( null, response.data.username, response.data.ipaddress, response.data.admin );
                     }
                 }, function errorCB(error) {
                     if (error) {
+                        console.log(error);
                         passUsername(error, null, null);
                         throw error;
                     }
