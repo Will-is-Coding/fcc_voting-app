@@ -14,7 +14,12 @@ var secret = process.env.SECRET;
 var app = express();
 //require('dotenv').load();
 
-mongoose.connect(process.env.MONGO_URI);
+mongoose.connect(process.env.MONGO_URI, function(err, res) {
+    if(err)
+        console.log("Error connecting to mLab: " + err);
+    else
+        console.log("Success in mLab connection");
+});
 app.set('superSecret', secret);
 
 //app.use(morgan('dev'));
